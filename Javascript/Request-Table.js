@@ -33,6 +33,4 @@ function call() {
 
 function callPopup() {
 	var popup = document.querySelector("#popup");
-	
-	popup.
 }
