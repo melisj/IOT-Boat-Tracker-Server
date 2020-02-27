@@ -16,8 +16,6 @@ function GetWeatherInfo(hours) {
 function GetLocation() {
     if(navigator.geolocation)
         navigator.geolocation.getCurrentPosition(RecieveLocation);
-    else
-        console.log("this browser does not support geolocation");
 }
 
 // Callback function for the geolocator

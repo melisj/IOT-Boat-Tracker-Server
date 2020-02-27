@@ -1,9 +1,30 @@
-th {
-	background: white;
-	border: 1px solid black;
-	padding: 10px;
+table {
+	display: block;
+	border-collapse: collapse;
 }
 
-.timestamp {
-	padding: 14px 20px;
+th {
+	background: white;
+	border: 2px solid black;
+	min-height: 50px;
+	min-width: 50px;
+	padding: 0px;
+}
+
+input {
+	background: #aaaaaa;
+	margin: 0px;
+	min-height: 50px;
+	min-width: 50px;
+	border: 0px;
+	padding: 0px;
+	display: block;
+}
+
+input:hover {
+	background: red;
+}
+
+input:active {
+	background: green;
 }
