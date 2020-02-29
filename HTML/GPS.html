@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		
+		<script src="../Javascript/Client-Side/Geolocator.js"></script>
+		<link rel="stylesheet" href= "../CSS/Table-Style.css">
+		
+		<script>
+
+			function startGPS() {
+				getLocation();
+				setTimeout(startGPS, 60000);
+			}
+
+		</script>
+
+	</head>
+
+	<body onload="startGPS()">
+		<h1>
+
+			This is the GPS site, <br>
+			this will send info to the server about the position of the tracker
+
+		</h1>
+	</body>
+
+</html>

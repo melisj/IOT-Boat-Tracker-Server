@@ -4,7 +4,7 @@ const FORWARD_STEPS = 8;
 const TOTAL_STEPS = PAST_STEPS + FORWARD_STEPS + 1; // +1 for current time aswell
 const TIME_STEP_MINUTES = 30;
 
-function call() {
+function requestTable() {
 	// For now the names are hard coded
 	var boatList = ["qwr", "qwe", "rqw", "rqt", "wda"];
 	var timeList = new Array(TOTAL_STEPS);
@@ -19,7 +19,7 @@ function call() {
 		
 	// Add all the times above the table
 	for (var iTime = 0; iTime < TOTAL_STEPS; iTime++) {
-		timeList[iTime] = GetTimeStepOnIndex(currentTime, iTime - PAST_STEPS);
+		timeList[iTime] = getTimeStepOnIndex(currentTime, iTime - PAST_STEPS);
 		totalTable += "	<th>" + timeList[iTime] + "</th>";
 	}	
 	totalTable += "</tr>";
@@ -40,7 +40,9 @@ function call() {
 	boatTable.innerHTML = totalTable;
 }
 
-function GetTimeStepOnIndex(currentTime, timeStep) {
+// Return the time in steps of 30 minutes
+// Index will determine if the step should be back or forwards in time
+function getTimeStepOnIndex(currentTime, timeStep) {
 	var minutes = currentTime.getMinutes() + currentTime.getHours() * 60;
 	minutes += timeStep * TIME_STEP_MINUTES;
 
@@ -59,8 +61,8 @@ function GetTimeStepOnIndex(currentTime, timeStep) {
 	return hours  + ":" + minutes;
 }
 
-
-function CallPopup() {
+// Function to show popup
+function showPopup() {
 	var popup = document.querySelector("#popup");
 	popup.style.display = "none";
 }
