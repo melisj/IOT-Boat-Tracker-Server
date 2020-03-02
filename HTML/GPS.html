@@ -11,7 +11,8 @@
 
 			function startGPS() {
 				getLocation();
-				setTimeout(startGPS, 60000);
+				clearTimeout();
+				setTimeout(startGPS, 30000);
 			}
 
 		</script>
@@ -24,7 +25,11 @@
 			This is the GPS site, <br>
 			this will send info to the server about the position of the tracker
 
+			
 		</h1>
+
+		<label>START GPS (use when it hasn't started automatically)</label>
+		<input type="button" onclick="startGPS()">
 	</body>
 
 </html>
