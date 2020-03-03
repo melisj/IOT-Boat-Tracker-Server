@@ -10,7 +10,7 @@ const DEFAULT_METRICS = "&si";
 
 const https = require("https");
 const EventEmitter = require('events');
-const database = require("./GPS-Database");
+const database = require("../GPS-Database");
 const hoursForecast = 2;
 const dataRetrievedEvent = new EventEmitter();
 

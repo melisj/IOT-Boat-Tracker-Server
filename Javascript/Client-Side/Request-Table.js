@@ -1,16 +1,18 @@
+// Script will be called to create the renting table with the current time.
+// This script will also make a call to the server for all the boat names.
+
 // Time table constants
 const PAST_STEPS = 4;
 const FORWARD_STEPS = 8;
 const TOTAL_STEPS = PAST_STEPS + FORWARD_STEPS + 1; // +1 for current time aswell
 const TIME_STEP_MINUTES = 30;
 
-// Cache button that was selected
-var selectedTimeButton;
-
+// Function to be called to start the initialization of the table
 function requestTable() {
 	getAllTheBoats();
 }
 
+// Construct the table with the data
 function createTable(boatList) {
 	var timeList = new Array(TOTAL_STEPS);
 
@@ -35,7 +37,7 @@ function createTable(boatList) {
 		totalTable += "<tr class='boat-name " + boatList[iBoat].boat_name + "'><th>" + boatList[iBoat].boat_name + "</th>";
 			
 		for (var iTime = 0; iTime < TOTAL_STEPS; iTime++) {
-			totalTable += "	<th><input class='button " + timeList[iTime] + "' type='button' onclick='togglePopup(this)'></th>";
+			totalTable += "	<th><input class='button " + timeList[iTime] + " " + boatList[iBoat].boat_name + "' type='button' onclick='togglePopup(this)'></th>";
 		}
 		
 		totalTable += "</tr>";
@@ -66,23 +68,7 @@ function getTimeStepOnIndex(currentTime, timeStep) {
 	return hours  + ":" + minutes;
 }
 
-// Function to show popup
-function togglePopup(fromButton) {
-	var popup = document.querySelector("#popup");
-	var visible = popup.style.display == "block";
-	var beginTime = fromButton.className.split(" ")[1];
-
-	if(!visible)
-		selectedTimeButton = fromButton;
-
-	popup.style.display = visible ? "none" : "block";
-	selectedTimeButton.style.background = visible ? "#aaaaaa" : "red";
-}
-
-function sendRouteRequest() {
-
-}
-
+// Get all the boats that are stored in the database
 function getAllTheBoats() {
 	var ajax = new XMLHttpRequest();
 

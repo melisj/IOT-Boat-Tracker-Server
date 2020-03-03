@@ -19,28 +19,27 @@
 		<div id="table-container">
 			<!-- Time table with all the boats available -->
 			<table id="boat-table"></table>
-		
-			<div style="display:none;" id="popup">
-				
-				<h1>
-					Afschrijving
-				</h1>
+		</div>
 
-				<form action="/client/sendroute" method="POST">
-					<label>End Time</label>
-					<input type="time">
+		<div style="display:none;" id="popup">
+			
+			<h1>
+				Afschrijving
+			</h1>
 
-					<br>
-					<label>submit</label>
-					<input type="submit">
-				</form>
-				
-				<p>naam</p>
-					
-				
-			</div>
+			<form id="rent_form">
+				<label>Begin Time</label>
+				<input readonly id="rent_form_begin_time" name="begin_time" type="time">
+				<label>End Time</label>
+				<input name="end_time" type="time" required>
+
+				<br>
+
+				<input type="submit" value="Use boat">
+			</form>
 		</div>
 		
+		<script src="../Javascript/Client-Side/Rent-Popup.js"></script>
 	</body>
 
 </html>

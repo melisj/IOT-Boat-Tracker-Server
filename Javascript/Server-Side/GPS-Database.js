@@ -1,87 +1,61 @@
-const mysql = require("mysql");
+// Script to maintain all the incoming location data from the GPS
 
-// Variables for the mysql database
-const connectionVariables = {
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "boattracker"
-};
+const dbCore = require("./Database-Essentials");
+const timestamp = require("./Utils/Timestamp");
 
 // Queries
 const updateBaseLocation = "UPDATE boat SET ";
 const getBaseLocation = "SELECT base_latitude, base_longitude FROM boat WHERE boat_name = '";
 const getBoatInfo = "SELECT boat_name FROM boat";
+const addNewLocation = "INSERT INTO geolocation (time, route_begin_time, route_boat_boat_name, latitude, longitude) VALUES (";
 
 // Function for storing a new calibrated location for the specified boat
 function calibrateBaseLocation(newLocation, boatName, response) {
-    var connection = createDatabaseConnection();
+    var completeQuery = updateBaseLocation + 
+    "base_latitude = '" + newLocation.latitude + 
+    "', base_longitude = '" + newLocation.longitude +
+    "' WHERE boat_name = '" + boatName + "';"; 
 
-    if(connection) {    
-        var completeQuery = updateBaseLocation + 
-        "base_latitude = '" + newLocation.latitude + 
-        "', base_longitude = '" + newLocation.longitude +
-        "' WHERE boat_name = '" + boatName + "';"; 
-
-        // Query to the database
-        connection.query(completeQuery, (error, result) => {
-            if (error) console.log(error);
-            connection.end(); 
-
-            // End the http request
-            response.end(error ? "Error" : "Location calibrated");
-        });
-    } 
+    // Query to the database
+    dbCore.doQuery(completeQuery, (result) => 
+        // End the http request
+        response.end(result ? "succeeded" : "error")
+    );
 }
 
 // Function to get the last known location of the specified boat 
 function getLastKnownLocation(boatName, callback) {
-    var connection = createDatabaseConnection();
+    var completeQuery = getBaseLocation + boatName + "';"; 
 
-    if (connection) {
-        var completeQuery = getBaseLocation + boatName + "';"; 
-
-        // Query to the database
-        connection.query(completeQuery, (error, result) => {
-            connection.end(); 
-
-            if(!error)
-                callback({ latitude: result[0].base_latitude, longitude: result[0].base_longitude });
-            else 
-                console.log(error);
-        });
-    }
+    // Query to the database
+    dbCore.doQuery(completeQuery, (result) =>
+        // Return a location object
+        callback({ latitude: result[0].base_latitude, longitude: result[0].base_longitude })
+    );
 }
 
+// Add a new location object to a route (from gps)
+function addLocationObject(boatName, beginTime, latitude, longitude) {
+    var completeQuery = addNewLocation +
+    " '" + timestamp.createTimestampSQL() + "'" +
+    ", '" + timestamp.createTimestampSQLInput(beginTime) + "'" +
+    ", '" + boatName + "'" +
+    ", " + latitude + 
+    ", " + longitude +
+    ");"; 
 
-// Create and return the connection with the database
-function createDatabaseConnection() {
-    var connection = mysql.createConnection(connectionVariables);
-
-    connection.connect(error => { if(error) console.log(error) });
-
-    // Error out when connection failed
-    if(!connection) console.log("connection failed to database");
-
-    return connection;
+    // Query to the database
+    dbCore.doQuery(completeQuery);
 }
-
-
 
 function getAllRouteInfo() {
 
 }
 
 function getAllBoatInfo(response) {
-    var connection = createDatabaseConnection();
-
-    if (connection) {
-        connection.query(getBoatInfo, (error, result) => {
-            if(error) console.log(error);
-
-            response.end(JSON.stringify(result));
-        });
-    }
+    dbCore.doQuery(getBoatInfo, (result) =>
+        response.end(JSON.stringify(result))
+    );
 }
 
 module.exports.getAllRouteInfo = getAllRouteInfo;

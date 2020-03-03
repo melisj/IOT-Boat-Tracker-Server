@@ -1,3 +1,8 @@
+// Script to be run in a browser to locate the user.
+// This will send the latitude and longitude to the server for the hardcoded boat
+
+// TODO hardcode boat
+
 // Attemts to request the geolocation data
 function getLocation() {
     if(navigator.geolocation)

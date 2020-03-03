@@ -1,9 +1,12 @@
+// Script managing the file retrieval from the server.
+// When a requested file could not be found, there will be searched in the standard html path.
+
 const fs = require("fs");
 
 // Load a file from the root of the server
 function loadFile(path) {
     // Default message for the server
-    var file = "404 File was lost in space";
+    var file = "And what do you think you are trying to get from this? 404 kan je krijgen faggot"; //"404 File was lost in space";
 
     // Get the path as requested
     try {

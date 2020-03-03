@@ -3,11 +3,13 @@ body {
 	font-size: 15px;
 	font-family: 'Times New Roman', Times, serif;
 	text-align: center;
+	margin: 0px;
 }
 
 #header {
 	background: #f86300;
-	min-height: 100px
+	min-height: 100px;
+	margin: 0px;
 }
 
 #table-container {

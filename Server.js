@@ -1,7 +1,10 @@
+// Server file, this script will handle all the incoming requests
+
 const http = require("http");
 const queryParser = require("querystring");
-const weather = require("./Javascript/Server-Side/Weather-API");
-const database = require("./Javascript/Server-Side/GPS-Database");
+const weather = require("./Javascript/Server-Side/API's/Weather-API");
+const gps_data = require("./Javascript/Server-Side/GPS-Database");
+const route_data = require("./Javascript/Server-Side/Route-Database");
 const fileManager = require("./Javascript/Server-Side/File-Manager");
 
 const HARDCODE_BOAT = "viermineen";
@@ -9,18 +12,21 @@ const HARDCODE_BOAT = "viermineen";
 // Create a server
 const server = http.createServer((request, response) => {
     console.log(request.url);
+    console.log(request.connection.remoteAddress);
    
     // Catch errors
     request.on("error", (error) => console.log(error));
 
     // Check if this request has access to the requested files
     if(isRequestRestricted(request.url)) {
-        response.end("Who do you think you are!");
+        console.log("404 error files could not be found");
+        response.end("404 error files could not be found");
     }
     else {
         // Respond to POST requests
         if(request.method == "POST")
-            handlePostRequest(request, response);
+            console.log("post");
+            //handlePostRequest(request, response);
         // Respond to GET requests
         else
             handleGetRequest(request, response);
@@ -64,11 +70,12 @@ function handlePostRequest(request, response){
         // TODO clean input
 
         switch(request.url) {
+            // Request from client to create a new route
             case "/client/sendroute":
             response.end();
             break;
             case "/":
-            database.calibrateLocation(postObject, HARDCODE_BOAT, response);
+            gps_data.calibrateLocation(postObject, HARDCODE_BOAT, response);
             break;
         }
     })
@@ -85,10 +92,10 @@ function handleGetRequest(request, response){
         case "/arduino/weather": recieveWeatherData(response);
         return;
         // Do a arduino request for the calibration (DONT USE YET)
-        case "/arduino/calibrate": database.calibrateLocation(response);
+        case "/arduino/calibrate": gps_data.calibrateLocation(response);
         break;
-        // Do a arduino request for the calibration (DONT USE YET)
-        case "/client/boatinfo": database.getAllBoatInfo(response);
+        // Do a request for all the boat info there is
+        case "/client/boatinfo": gps_data.getAllBoatInfo(response);
         break;
         // Do a request for specific resources
         default : response.end(fileManager.loadFile(request.url.substring(1)));
