@@ -4,9 +4,14 @@ const FORWARD_STEPS = 8;
 const TOTAL_STEPS = PAST_STEPS + FORWARD_STEPS + 1; // +1 for current time aswell
 const TIME_STEP_MINUTES = 30;
 
+// Cache button that was selected
+var selectedTimeButton;
+
 function requestTable() {
-	// For now the names are hard coded
-	var boatList = ["qwr", "qwe", "rqw", "rqt", "wda"];
+	getAllTheBoats();
+}
+
+function createTable(boatList) {
 	var timeList = new Array(TOTAL_STEPS);
 
 	var boatTable = document.querySelector("#boat-table");
@@ -27,10 +32,10 @@ function requestTable() {
 	// Get all the boats and add them to a table
 	for(var iBoat = 0; iBoat < boatList.length; iBoat++) 
 	{
-		totalTable += "<tr class='boat-name'><th>" + boatList[iBoat] + "</th>";
+		totalTable += "<tr class='boat-name " + boatList[iBoat].boat_name + "'><th>" + boatList[iBoat].boat_name + "</th>";
 			
 		for (var iTime = 0; iTime < TOTAL_STEPS; iTime++) {
-			totalTable += "	<th><input class='" + timeList[iTime] + "' type='button'></th>";
+			totalTable += "	<th><input class='button " + timeList[iTime] + "' type='button' onclick='togglePopup(this)'></th>";
 		}
 		
 		totalTable += "</tr>";
@@ -62,7 +67,32 @@ function getTimeStepOnIndex(currentTime, timeStep) {
 }
 
 // Function to show popup
-function showPopup() {
+function togglePopup(fromButton) {
 	var popup = document.querySelector("#popup");
-	popup.style.display = "none";
+	var visible = popup.style.display == "block";
+	var beginTime = fromButton.className.split(" ")[1];
+
+	if(!visible)
+		selectedTimeButton = fromButton;
+
+	popup.style.display = visible ? "none" : "block";
+	selectedTimeButton.style.background = visible ? "#aaaaaa" : "red";
+}
+
+function sendRouteRequest() {
+
+}
+
+function getAllTheBoats() {
+	var ajax = new XMLHttpRequest();
+
+	ajax.open("GET", "/client/boatinfo");
+	
+	ajax.onreadystatechange = () => {
+		if(ajax.readyState == 4 && ajax.status == 200) {
+			createTable(JSON.parse(ajax.responseText));
+		}
+	};
+
+	ajax.send();
 }

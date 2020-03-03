@@ -60,7 +60,17 @@ function handlePostRequest(request, response){
     // Parse the data to an object and use the object depending on the request
     request.on("end", () => {
         var postObject = queryParser.parse(data);
-        database.calibrateLocation(postObject, HARDCODE_BOAT, response);
+        console.log(postObject);
+        // TODO clean input
+
+        switch(request.url) {
+            case "/client/sendroute":
+            response.end();
+            break;
+            case "/":
+            database.calibrateLocation(postObject, HARDCODE_BOAT, response);
+            break;
+        }
     })
 }
 
@@ -76,6 +86,9 @@ function handleGetRequest(request, response){
         return;
         // Do a arduino request for the calibration (DONT USE YET)
         case "/arduino/calibrate": database.calibrateLocation(response);
+        break;
+        // Do a arduino request for the calibration (DONT USE YET)
+        case "/client/boatinfo": database.getAllBoatInfo(response);
         break;
         // Do a request for specific resources
         default : response.end(fileManager.loadFile(request.url.substring(1)));
