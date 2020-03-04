@@ -23,8 +23,8 @@ function createDatabaseConnection() {
 }
 
 // Query something
-function queryToDatabase(query, callback, keepConnection = false) {
-    var connection = createDatabaseConnection();
+function queryToDatabase(query, callback, keepConnection = false, oldConnection = null) {
+    var connection = oldConnection ? oldConnection : createDatabaseConnection();
 
     if(connection) {    
         // Do the query
@@ -32,7 +32,8 @@ function queryToDatabase(query, callback, keepConnection = false) {
             if(error) console.log(error);
 
             // Send out the callback with the results and connection when keepConnection is true
-            callback(result, connection);
+            if(callback)
+                callback(result, connection);
 
             // End the connection
             if(!keepConnection)

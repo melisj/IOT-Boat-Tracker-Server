@@ -46,7 +46,6 @@ function sendRouteRequest(event) {
 	// Set the header information 
 	ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-
 	ajax.send("boat_name=" + rentInfo.boat_name + "&begin_time=" + rentInfo.begin_time + "&end_time=" + rentInfo.end_time);
 }
 

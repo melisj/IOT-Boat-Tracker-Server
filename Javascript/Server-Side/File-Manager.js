@@ -10,7 +10,7 @@ const jsonPath = "./Server-Resources/Caching.json";
 // Load a file from the root of the server
 function loadFile(path) {
     // Default message for the server
-    var file = "And what do you think you are trying to get from this? 404 kan je krijgen faggot"; //"404 File was lost in space";
+    var file = "404 error, files could not be found"; //"404 File was lost in space";
 
     // Get the path as requested
     try {
@@ -41,7 +41,6 @@ function saveToJsonCache(boatName, gpsObject) {
     var lastLocations = JSON.parse(fs.readFileSync(jsonPath));
 
     try {
-        console.log(gpsObject);
         // Update the boat in the cache
         if(lastLocations.boats[0][boatName]) { 
             lastLocations.boats[0][boatName].latitude = gpsObject.latitude
@@ -59,7 +58,7 @@ function saveToJsonCache(boatName, gpsObject) {
 
 // Load a json file to get the last known location
 function loadJsonCache(boatName) {
-    var lastLocations =JSON.parse(fs.readFileSync(jsonPath));
+    var lastLocations = JSON.parse(fs.readFileSync(jsonPath));
     var lastLocationBoat;
 
     try {

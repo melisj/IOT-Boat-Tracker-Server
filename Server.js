@@ -19,8 +19,8 @@ const server = http.createServer((request, response) => {
 
     // Check if this request has access to the requested files
     if(isRequestRestricted(request.url)) {
-        console.log("404 error files could not be found");
-        response.end("404 error files could not be found");
+        console.log("404 error, files could not be found");
+        response.end("404 error, files could not be found");
     }
     else {
         // Respond to POST requests
@@ -71,7 +71,7 @@ function handlePostRequest(request, response){
 
         switch(request.url) {
             // Request from client to create a new route
-            case "/client/sendroute": response.end();
+            case "/client/sendroute": route_data.addRouteForBoat(postObject); response.end();
             break;
             // Save the gps location
             case "/gps": fileManager.saveLocationCache(HARDCODE_BOAT, postObject); response.end();

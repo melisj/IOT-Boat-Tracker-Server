@@ -5,15 +5,15 @@ const timestamp = require("./Utils/Timestamp");
 
 // Queries
 const updateBaseLocation = "UPDATE boat SET ";
-const getBoatInfo = "SELECT boat_name FROM boat";
-const addNewLocation = "INSERT INTO geolocation (time, route_begin_time, route_boat_boat_name, latitude, longitude) VALUES (";
+const getBoatInfo = "SELECT `name` FROM boat";
+const addNewLocation = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
 
 // Function for storing a new calibrated location for the specified boat
 function calibrateBaseLocation(newLocation, boatName, response) {
     var completeQuery = updateBaseLocation + 
     "base_latitude = '" + newLocation.latitude + 
     "', base_longitude = '" + newLocation.longitude +
-    "' WHERE boat_name = '" + boatName + "';"; 
+    "' WHERE name = '" + boatName + "';"; 
 
     // Query to the database
     dbCore.doQuery(completeQuery, (result) => 
@@ -49,4 +49,3 @@ function getAllBoatInfo(response) {
 module.exports.getAllRouteInfo = getAllRouteInfo;
 module.exports.getAllBoatInfo = getAllBoatInfo;
 module.exports.calibrateLocation = calibrateBaseLocation;
-module.exports.getLastKnownLocation = getLastKnownLocation;

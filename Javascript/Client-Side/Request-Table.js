@@ -10,6 +10,7 @@ const TIME_STEP_MINUTES = 30;
 // Function to be called to start the initialization of the table
 function requestTable() {
 	getAllTheBoats();
+	
 }
 
 // Construct the table with the data
@@ -17,6 +18,8 @@ function createTable(boatList) {
 	var timeList = new Array(TOTAL_STEPS);
 
 	var boatTable = document.querySelector("#boat-table");
+
+	console.log(boatList[iBoat]);
 
 	// Get time variables
 	var currentTime = new Date();
@@ -34,10 +37,10 @@ function createTable(boatList) {
 	// Get all the boats and add them to a table
 	for(var iBoat = 0; iBoat < boatList.length; iBoat++) 
 	{
-		totalTable += "<tr class='boat-name " + boatList[iBoat].boat_name + "'><th>" + boatList[iBoat].boat_name + "</th>";
+		totalTable += "<tr class='boat-name " + boatList[iBoat].name + "'><th>" + boatList[iBoat].name + "</th>";
 			
 		for (var iTime = 0; iTime < TOTAL_STEPS; iTime++) {
-			totalTable += "	<th><input class='button " + timeList[iTime] + " " + boatList[iBoat].boat_name + "' type='button' onclick='togglePopup(this)'></th>";
+			totalTable += "	<th><input class='button " + timeList[iTime] + " " + boatList[iBoat].name + "' type='button' onclick='togglePopup(this)'></th>";
 		}
 		
 		totalTable += "</tr>";
