@@ -25,8 +25,7 @@ const server = http.createServer((request, response) => {
     else {
         // Respond to POST requests
         if(request.method == "POST")
-            console.log("post");
-            //handlePostRequest(request, response);
+            handlePostRequest(request, response);
         // Respond to GET requests
         else
             handleGetRequest(request, response);
@@ -62,20 +61,20 @@ function handlePostRequest(request, response){
     
     // Collect all the data
     request.on("data", (dataChunk) => data += dataChunk);
-    
+
     // Parse the data to an object and use the object depending on the request
     request.on("end", () => {
         var postObject = queryParser.parse(data);
         console.log(postObject);
         // TODO clean input
+        
 
         switch(request.url) {
             // Request from client to create a new route
-            case "/client/sendroute":
-            response.end();
+            case "/client/sendroute": response.end();
             break;
-            case "/":
-            gps_data.calibrateLocation(postObject, HARDCODE_BOAT, response);
+            // Save the gps location
+            case "/gps": fileManager.saveLocationCache(HARDCODE_BOAT, postObject); response.end();
             break;
         }
     })
@@ -91,8 +90,8 @@ function handleGetRequest(request, response){
         // Do a arduino request for the weather (close response when data is collected)
         case "/arduino/weather": recieveWeatherData(response);
         return;
-        // Do a arduino request for the calibration (DONT USE YET)
-        case "/arduino/calibrate": gps_data.calibrateLocation(response);
+        // Do a arduino request for the calibration
+        case "/arduino/calibrate": gps_data.calibrateLocation(fileManager.loadLocationCache(HARDCODE_BOAT), HARDCODE_BOAT, response);
         break;
         // Do a request for all the boat info there is
         case "/client/boatinfo": gps_data.getAllBoatInfo(response);

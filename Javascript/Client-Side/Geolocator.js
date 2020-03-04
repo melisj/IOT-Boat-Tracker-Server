@@ -2,6 +2,7 @@
 // This will send the latitude and longitude to the server for the hardcoded boat
 
 // TODO hardcode boat
+var gpsForBoat = "viermineen"
 
 // Attemts to request the geolocation data
 function getLocation() {
@@ -23,7 +24,7 @@ function recieveLocation(location) {
 // Function will call the server with a POST request to store the latest gps info
 function storeLocationInDatabase(coordinates) {
     var ajax = new XMLHttpRequest();
-    ajax.open("POST", "/", true);
+    ajax.open("POST", "/gps", true);
 
     // Set the header information 
     ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');

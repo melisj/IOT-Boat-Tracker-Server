@@ -5,7 +5,6 @@ const timestamp = require("./Utils/Timestamp");
 
 // Queries
 const updateBaseLocation = "UPDATE boat SET ";
-const getBaseLocation = "SELECT base_latitude, base_longitude FROM boat WHERE boat_name = '";
 const getBoatInfo = "SELECT boat_name FROM boat";
 const addNewLocation = "INSERT INTO geolocation (time, route_begin_time, route_boat_boat_name, latitude, longitude) VALUES (";
 
@@ -20,17 +19,6 @@ function calibrateBaseLocation(newLocation, boatName, response) {
     dbCore.doQuery(completeQuery, (result) => 
         // End the http request
         response.end(result ? "succeeded" : "error")
-    );
-}
-
-// Function to get the last known location of the specified boat 
-function getLastKnownLocation(boatName, callback) {
-    var completeQuery = getBaseLocation + boatName + "';"; 
-
-    // Query to the database
-    dbCore.doQuery(completeQuery, (result) =>
-        // Return a location object
-        callback({ latitude: result[0].base_latitude, longitude: result[0].base_longitude })
     );
 }
 
