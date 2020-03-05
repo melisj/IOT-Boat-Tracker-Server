@@ -40,13 +40,11 @@ function doWeatherRequestForLocation(coordinates) {
     // Do a get request for the weather
     https.get(completeUrl, (response) => {
         
-        console.log('HTTPS Status:' + response.statusCode);
-
         if(response.statusCode == 200){
             // Recieve the data
             var completeData = '';
             response.on("data", (data) => completeData += data);
-            response.on("end", () => weatherRequestComplete(completeData));
+            response.on("end", () => weatherRequestComplete(completeData, response.statusCode));
         }
 
     // Report error when connection failed
@@ -58,8 +56,7 @@ function doWeatherRequestForLocation(coordinates) {
 // Callback for the weather request, process it and send it to the server file
 // Function will return an object with 3 values
 // Each value represents an led index on the arduino (0 = no light, 1 = yellow, 2 = red)
-// 
-function weatherRequestComplete(data) {
+function weatherRequestComplete(data, httpStatus) {
     var jsonData = JSON.parse(data).hourly.data[0];
 
     var precipProbability = jsonData.precipProbability;
@@ -77,7 +74,7 @@ function weatherRequestComplete(data) {
 
     console.log(returnObject);
 
-    dataRetrievedEvent.emit("recieved", returnObject);
+    dataRetrievedEvent.emit("recieved", returnObject, httpStatus);
 }
 
 // Export the weather request and recieve event

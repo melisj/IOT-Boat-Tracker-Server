@@ -2,19 +2,24 @@ function createTimestampSQL(){
     var currentTime = new Date();
 
     // Format "YYYY-MM-DD HH:MM:SS"
-    return currentTime.getFullYear() + "-" + currentTime.getDate() + "-" + currentTime.getDay() + " " +
+    return currentTime.getFullYear() + "-" + (currentTime.getMonth() + 1) + "-" +  currentTime.getDate()  + " " +
     currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds();
-
-    
 }
 
-function createTimestampSQLInput(hourMinuteTime){
+function createTimestampSQLGivenTime(time){
+    // Format "YYYY-MM-DD HH:MM:SS"
+    return time.getFullYear() + "-" + (time.getMonth() + 1) + "-" +  time.getDate() + " " +
+    time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+}
+
+function createTimestampSQLTimeCurrentDay(hourMinuteTime){
     var currentTime = new Date();
 
     // Format "YYYY-MM-DD HH:MM:SS"
-    return currentTime.getFullYear() + "-" + currentTime.getDate() + "-" + currentTime.getDay() + " " +
+    return currentTime.getFullYear() + "-" + (currentTime.getMonth() + 1) + "-" +  currentTime.getDate() + " " +
     hourMinuteTime + ":00";
 }
 
 module.exports.createTimestampSQL = createTimestampSQL;
-module.exports.createTimestampSQLInput = createTimestampSQLInput;
+module.exports.createTimestampSQLTimeCurrentDay = createTimestampSQLTimeCurrentDay;
+module.exports.createTimestampSQLGivenTime = createTimestampSQLGivenTime;

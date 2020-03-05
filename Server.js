@@ -52,8 +52,9 @@ function isRequestRestricted(requestString) {
 function recieveWeatherData(response) {
     weather.requestWeather(HARDCODE_BOAT);
 
-    weather.on("recieved", (data) => {
-        httpUtil.endResponse(response, httpUtil.OK, JSON.stringify(data));
+    weather.on("recieved", (data, httpReturnStatus) => {
+        httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));
+        weather.removeAllListeners("recieved");
     });
 }
 
@@ -79,6 +80,8 @@ function handlePostRequest(request, response){
             case "/gps": dbGps.recieveGpsLocation(HARDCODE_BOAT, postObject, response);
             break;
         }
+
+        request.removeAllListeners();
     })
 }
 

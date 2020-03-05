@@ -26,18 +26,21 @@ function calibrateBaseLocation(boatName, response) {
         // End the http request
         httpUtil.endResponse(response, 
             result ? httpUtil.CREATED : httpUtil.INTERNAL_ERROR, 
-            result ? "succeeded" : "error");
+            result ? "succeeded" : "error"); // Respond
     });
 }
 
 // Update the current location for a specific boat
 function updateCurrentLocation (boatName, gpsObject) {
+    // Store the position in the cache
+    fileManager.saveLocationCache(boatName, gpsObject);
+
+    // Store the position in the database
     var completeQuery = updateBoatLocation + 
     "cur_latitude = '" + gpsObject.latitude + 
     "', cur_longitude = '" + gpsObject.longitude +
     "' WHERE name = '" + boatName + "';"; 
 
-    // Query to the database
     dbCore.doQuery(completeQuery);
 } 
 
@@ -45,7 +48,7 @@ function updateCurrentLocation (boatName, gpsObject) {
 function addLocationObject(boatName, beginTime, latitude, longitude) {
     var completeQuery = addNewLocationToRoute +
     " '" + timestamp.createTimestampSQL() + "'" +
-    ", '" + timestamp.createTimestampSQLInput(beginTime) + "'" +
+    ", '" + timestamp.createTimestampSQLGivenTime(beginTime) + "'" +
     ", '" + boatName + "'" +
     ", " + latitude + 
     ", " + longitude +
@@ -63,15 +66,13 @@ function getAllRouteInfo() {
 // Retrieve all the boats in the database
 function getAllBoatInfo(response) {
     dbCore.doQuery(getBoatInfo, (result) => {
-        httpUtil.endResponse(response, result ? httpUtil.OK : httpUtil.INTERNAL_ERROR, JSON.stringify(result));
-    });
+        httpUtil.endResponse(response, result ? httpUtil.OK : httpUtil.INTERNAL_ERROR, JSON.stringify(result)); // Respond
+    }); 
 }
 
 // Recieve an gps location from a boat and store it appropriately
 function recieveGpsLocation(boatName, gpsObject, response) {
     try {
-        // Store the position in the cache
-        fileManager.saveLocationCache(boatName, gpsObject);
         // Store it in the database in the cur position of the boat
         updateCurrentLocation(boatName, gpsObject);
 
@@ -79,10 +80,14 @@ function recieveGpsLocation(boatName, gpsObject, response) {
         dbRoute.hasRouteStarted(boatName);
 
         // Check what route reservation is active right now
-        dbRoute.routeCheck.on("done", (result, timeResult) => {
+        dbRoute.routeInfo.on("done", (result, timeResult) => {
             // End the connection when it failed
-            if(result && timeResult)
-                httpUtil.endResponse(response, httpUtil.NO_CONTENT);
+            if(result == null || timeResult == null) {
+                httpUtil.endResponse(response, httpUtil.NO_CONTENT); // Respond
+                return;
+            }
+
+            console.log("an gps location has been send");
 
             var boatLeft = result[0].left;
             var boatReturned = result[0].returned;
@@ -93,20 +98,21 @@ function recieveGpsLocation(boatName, gpsObject, response) {
                 
                 // Check if boat is back (from gps data)
                 if(!checkDistanceWithBaseLocation(boatName)) 
-                    dbRoute.endRoute(boatName, timeResult);
+                    dbRoute.setRouteFlag(boatName, timeResult, true);
             }
             // Boat hasnt left yet (check if boat is leaving)
             else if(boatLeft == 0 && checkDistanceWithBaseLocation(boatName)) 
-                dbRoute.boatLeftFlag(boatName, timeResult);
+                dbRoute.setRouteFlag(boatName, timeResult, false);
 
-            httpUtil.endResponse(response, httpUtil.CREATED);
+            httpUtil.endResponse(response, httpUtil.CREATED); // Respond
+            dbRoute.routeInfo.removeAllListeners("done");
         });
 
     }
     // Catch the errors when it failed
     catch(error) {
         console.log(error);
-        httpUtil.endResponse(response, httpUtil.INTERNAL_ERROR);
+        httpUtil.endResponse(response, httpUtil.INTERNAL_ERROR); // Respond
     }
 }
 

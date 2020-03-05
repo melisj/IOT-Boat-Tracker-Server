@@ -2,8 +2,7 @@ const dbCore = require("./Database-Essentials");
 const timestamp = require("./Utils/Timestamp");
 const httpUtil = require("./Utils/Http");
 const EventEmitter = require('events');
-const lastRouteReturned = new EventEmitter();
-const routeCheck = new EventEmitter();
+const routeInfo = new EventEmitter();
 
 // Queries
 const createNewRoute = "INSERT INTO route (begin_time, boat_name, end_time) VALUES (";
@@ -16,10 +15,12 @@ const getLastKnownRoute = "SELECT begin_time FROM route WHERE returned = 0 AND b
 // Function for adding a boat that will be in use soon
 function addRouteForBoat(boatTimeObject, response) {
     var completeQuery = createNewRoute + 
-    "'" + timestamp.createTimestampSQLInput(boatTimeObject.begin_time) + "'" +
+    "'" + timestamp.createTimestampSQLTimeCurrentDay(boatTimeObject.begin_time) + "'" +
     ", '" + boatTimeObject.boat_name + "'" +
-    ", '" + timestamp.createTimestampSQLInput(boatTimeObject.end_time) + "'" +
+    ", '" + timestamp.createTimestampSQLTimeCurrentDay(boatTimeObject.end_time) + "'" +
     ");";
+
+    console.log(timestamp.createTimestampSQLTimeCurrentDay(boatTimeObject.begin_time));
 
     dbCore.doQuery(completeQuery, (results) => {
         httpUtil.endResponse(response, results ? httpUtil.CREATED : httpUtil.BAD_REQUEST);
@@ -30,34 +31,30 @@ function addRouteForBoat(boatTimeObject, response) {
 function hasRouteStarted(boatName) {
     getLastRoute(boatName);
 
-    lastRouteReturned.on("recieved", (timeResult) => {
-        var hourMinuteTime = timeResult.getHours() + ":" + timeResult.getMinutes();
+    routeInfo.on("lastRoute", (timeResult) => {
+        // Error out when nothing was found
+        if(timeResult == null) {
+            routeInfo.emit("done", null, null);
+            return;
+        }
+
         var completeQuery = getRouteFlags + 
-        "begin_time = \"" + timestamp.createTimestampSQLInput(hourMinuteTime) + "\" " + 
+        "begin_time = \"" + timestamp.createTimestampSQLGivenTime(timeResult) + "\" " + 
         "AND boat_name = \"" + boatName + 
         "\";";
 
         dbCore.doQuery(completeQuery, (result) => {
-            routeCheck.emit("done", result, hourMinuteTime);
+            routeInfo.emit("done", result, timeResult);
         });
+        routeInfo.removeAllListeners("lastRoute");
     });
 }
 
 // End the route by setting the returned flag to 1
-function endRoute(boatName, startTime) {
-    var completeQuery = updateReturnFlag + 
-    "begin_time = \"" + timestamp.createTimestampSQLInput(startTime) + "\"" +
+function setRouteFlag(boatName, startTime, returned) {
+    var completeQuery = returned ? updateReturnFlag : updateLeftFlag + 
+    "begin_time = \"" + timestamp.createTimestampSQLGivenTime(startTime) + "\"" +
     "AND boat_name = \"" + boatName + "\"" +
-    ";";
-
-    dbCore.doQuery(completeQuery);
-}
-
-// Set the "left" flag for the boat which will start the route tracking
-function boatLeftFlag(boatName, startTime) {
-    var completeQuery = updateLeftFlag + 
-    "begin_time = \"" + timestamp.createTimestampSQLInput(startTime) + "\"" +
-    " AND boat_name = \"" + boatName + "\"" +
     ";";
 
     dbCore.doQuery(completeQuery);
@@ -71,15 +68,13 @@ function getLastRoute(boatName) {
     "ORDER BY begin_time DESC;";
 
     dbCore.doQuery(completeQuery, (result) => { 
-        console.log(result);
-        lastRouteReturned.emit("recieved", result ? result[0].begin_time : null)
+        routeInfo.emit("lastRoute", result.length != 0 ? result[0].begin_time : null)
     });
 }
 
-module.exports.boatLeftFlag = boatLeftFlag;
-module.exports.endRoute = endRoute;
+module.exports.setRouteFlag = setRouteFlag;
 
 module.exports.hasRouteStarted = hasRouteStarted;
 module.exports.addRouteForBoat = addRouteForBoat;
 
-module.exports.routeCheck = routeCheck;
+module.exports.routeInfo = routeInfo;
