@@ -3,14 +3,15 @@
 // This will also handle the gps cache with the Json file
 
 const fs = require("fs");
+const httpUtil = require("./Utils/Http");
 
 // Json file location
 const jsonPath = "./Server-Resources/Caching.json";
 
 // Load a file from the root of the server
-function loadFile(path) {
+function loadFile(path, response) {
     // Default message for the server
-    var file = "404 error, files could not be found"; //"404 File was lost in space";
+    var file;
 
     // Get the path as requested
     try {
@@ -21,7 +22,7 @@ function loadFile(path) {
         file = loadHtmlFileFallback(path);
     }
 
-    return file;
+    httpUtil.endResponse(response, file ? httpUtil.OK : httpUtil.NOT_FOUND, file);
 }
 
 // Function to fall back to when a file was not found
@@ -31,7 +32,7 @@ function loadHtmlFileFallback(path) {
 
     // Add html to the path
     try { file = fs.readFileSync("HTML/" + path + ".html"); }
-    catch(error) { console.error(error); }
+    catch(error) { console.error(error);}
 
     return file;
 }
@@ -69,7 +70,7 @@ function loadJsonCache(boatName) {
     catch(error) {
         console.log("no known location for: " + boatName);
     }
-
+    
     return lastLocationBoat;
 }
 

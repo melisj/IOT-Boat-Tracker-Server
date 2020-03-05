@@ -3,9 +3,10 @@
 const http = require("http");
 const queryParser = require("querystring");
 const weather = require("./Javascript/Server-Side/API's/Weather-API");
-const gps_data = require("./Javascript/Server-Side/GPS-Database");
-const route_data = require("./Javascript/Server-Side/Route-Database");
+const dbGps = require("./Javascript/Server-Side/GPS-Database");
+const dbRoute = require("./Javascript/Server-Side/Route-Database");
 const fileManager = require("./Javascript/Server-Side/File-Manager");
+const httpUtil = require("./Javascript/Server-Side/Utils/Http");
 
 const HARDCODE_BOAT = "viermineen";
 
@@ -19,8 +20,9 @@ const server = http.createServer((request, response) => {
 
     // Check if this request has access to the requested files
     if(isRequestRestricted(request.url)) {
-        console.log("404 error, files could not be found");
-        response.end("404 error, files could not be found");
+        console.log("Forbiden request");
+        response.statusCode = statusCodes.FORBIDEN;
+        response.end();
     }
     else {
         // Respond to POST requests
@@ -47,11 +49,11 @@ function isRequestRestricted(requestString) {
 }
 
 // Request weather info and send this info back into a string
-function recieveWeatherData(responsObj) {
+function recieveWeatherData(response) {
     weather.requestWeather(HARDCODE_BOAT);
 
     weather.on("recieved", (data) => {
-        responsObj.end(JSON.stringify(data));
+        httpUtil.endResponse(response, httpUtil.OK, JSON.stringify(data));
     });
 }
 
@@ -71,10 +73,10 @@ function handlePostRequest(request, response){
 
         switch(request.url) {
             // Request from client to create a new route
-            case "/client/sendroute": route_data.addRouteForBoat(postObject); response.end();
+            case "/client/sendroute": dbRoute.addRouteForBoat(postObject, response);
             break;
             // Save the gps location
-            case "/gps": fileManager.saveLocationCache(HARDCODE_BOAT, postObject); response.end();
+            case "/gps": dbGps.recieveGpsLocation(HARDCODE_BOAT, postObject, response);
             break;
         }
     })
@@ -85,18 +87,20 @@ function handleGetRequest(request, response){
     switch(request.url)
     {
         // Do a homepage request
-        case "/" : response.end(fileManager.loadFile("HTML/GPS.html"));
+        case "/" : fileManager.loadFile("HTML/GPS.html", response);
         break;
         // Do a arduino request for the weather (close response when data is collected)
         case "/arduino/weather": recieveWeatherData(response);
         return;
         // Do a arduino request for the calibration
-        case "/arduino/calibrate": gps_data.calibrateLocation(fileManager.loadLocationCache(HARDCODE_BOAT), HARDCODE_BOAT, response);
+        case "/arduino/calibrate": dbGps.calibrateLocation(HARDCODE_BOAT, response);
         break;
         // Do a request for all the boat info there is
-        case "/client/boatinfo": gps_data.getAllBoatInfo(response);
+        case "/client/boatinfo": dbGps.getAllBoatInfo(response);
         break;
         // Do a request for specific resources
-        default : response.end(fileManager.loadFile(request.url.substring(1)));
+        default : fileManager.loadFile(request.url.substring(1), response);
     }
 }
+
+
