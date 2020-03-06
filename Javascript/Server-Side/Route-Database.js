@@ -52,7 +52,7 @@ function hasRouteStarted(boatName) {
 
 // End the route by setting the returned flag to 1
 function setRouteFlag(boatName, startTime, returned) {
-    var completeQuery = returned ? updateReturnFlag : updateLeftFlag + 
+    var completeQuery = (returned ? updateReturnFlag : updateLeftFlag) + 
     "begin_time = \"" + timestamp.createTimestampSQLGivenTime(startTime) + "\"" +
     "AND boat_name = \"" + boatName + "\"" +
     ";";

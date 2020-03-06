@@ -13,8 +13,8 @@ const getBoatInfo = "SELECT `name` FROM boat";
 const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
 const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat"
 
-// Distance from base location before the left/returned flag will be set
-const thresholdDistance = 0.01;
+// Distance from base location before the left/returned flag will be set (meters)
+const thresholdDistance = 100;
 
 // Function for storing a new calibrated location for the specified boat
 function calibrateBaseLocation(boatName, response) {

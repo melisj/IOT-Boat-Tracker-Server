@@ -13,7 +13,7 @@ function calculateStraightLineDistance(twoCoordinates) {
         longitude: twoCoordinates.cur_longitude
       }
       
-    return haversine(start, end);
+    return haversine(start, end, {unit: 'meter'});
 }
 
 module.exports.calculateStraightLineDistance = calculateStraightLineDistance;
