@@ -5,11 +5,16 @@ const timestamp = require("./Utils/Timestamp");
 const fileManager = require("./File-Manager");
 const dbRoute = require("./Route-Database");
 const httpUtil = require("./Utils/Http");
+const mathUtil = require("./Utils/MathUtil");
 
 // Queries
 const updateBoatLocation = "UPDATE boat SET ";
 const getBoatInfo = "SELECT `name` FROM boat";
 const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
+const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat"
+
+// Distance from base location before the left/returned flag will be set
+const thresholdDistance = 0.01;
 
 // Function for storing a new calibrated location for the specified boat
 function calibrateBaseLocation(boatName, response) {
@@ -97,17 +102,24 @@ function recieveGpsLocation(boatName, gpsObject, response) {
                 addLocationObject(boatName, timeResult, gpsObject.latitude, gpsObject.longitude);
                 
                 // Check if boat is back (from gps data)
-                if(!checkDistanceWithBaseLocation(boatName)) 
-                    dbRoute.setRouteFlag(boatName, timeResult, true);
+                checkDistanceWithBaseLocation(boatName, (isOutsideBase) => {
+                    // Set returned flag
+                    if(!isOutsideBase)
+                        dbRoute.setRouteFlag(boatName, timeResult, true);
+                });
             }
             // Boat hasnt left yet (check if boat is leaving)
-            else if(boatLeft == 0 && checkDistanceWithBaseLocation(boatName)) 
-                dbRoute.setRouteFlag(boatName, timeResult, false);
+            else if(boatLeft == 0) {
+                checkDistanceWithBaseLocation(boatName, (isOutsideBase) => {
+                    // Set left flag
+                    if(isOutsideBase)
+                        dbRoute.setRouteFlag(boatName, timeResult, false);
+                });
+            }
 
             httpUtil.endResponse(response, httpUtil.CREATED); // Respond
             dbRoute.routeInfo.removeAllListeners("done");
         });
-
     }
     // Catch the errors when it failed
     catch(error) {
@@ -117,14 +129,11 @@ function recieveGpsLocation(boatName, gpsObject, response) {
 }
 
 // Get info from the maps API about the distance from the calibrated base (true is away, false is at base)
-function checkDistanceWithBaseLocation(boatName) {
-    var distance = 2;
-    if(distance > 0.2){
-        return true;
-    }
-    else {
-        return false;
-    }
+function checkDistanceWithBaseLocation(boatName, callback) {
+    dbCore.doQuery(getDistanceBaseCurrent, (result) => {
+        var isBeyondDistance = mathUtil.calculateStraightLineDistance(result[0]) > thresholdDistance;
+        callback(isBeyondDistance);
+    });
 }
 
 module.exports.recieveGpsLocation = recieveGpsLocation;
