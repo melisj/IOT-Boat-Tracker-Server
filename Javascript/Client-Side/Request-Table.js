@@ -7,10 +7,15 @@ const FORWARD_STEPS = 8;
 const TOTAL_STEPS = PAST_STEPS + FORWARD_STEPS + 1; // +1 for current time aswell
 const TIME_STEP_MINUTES = 30;
 
+// Tags
+const reservedTag = "reserved";
+
 // Function to be called to start the initialization of the table
 function requestTable() {
 	doRequestForData((boatList) => createTable(boatList),
 	"/client/boats");
+
+	setTimeout(getAllRoutesForToday, 250);
 }
 
 // Construct the table with the data
@@ -69,3 +74,34 @@ function getTimeStepOnIndex(currentTime, timeStep) {
 	return hours  + ":" + minutes;
 }
 
+
+// Get the boats that are already reservered from the database
+function getAllRoutesForToday() {
+	doRequestForData((result) => { 
+		// Get the time buttons for each boat
+		result.forEach((value) => {
+			var eachButton = document.getElementsByClassName(value.boat_name);
+
+			// Variable to keep track of where the reservation period is
+			var foundBeginTime = false;
+			for (var i = 0; i < eachButton.length; i++) {
+				var classlist = eachButton[i].classList;
+
+				// Check if the boat is already reserved on this time
+				if(!classlist.contains(reservedTag)) {
+					if(classlist.contains(value.begin_time))
+						foundBeginTime = true;
+
+					// Stop adding the tag when the end time was found
+					if(classlist.contains(value.end_time))
+						break;
+
+					// If the beginning was found we should keep adding the reservation tag to it
+					if(foundBeginTime)
+						classlist.add(reservedTag, "/" + value.begin_time);
+				}
+			};
+		});
+		
+	}, "/client/boatroutes");
+}

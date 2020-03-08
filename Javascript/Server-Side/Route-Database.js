@@ -13,6 +13,7 @@ const updateLeftFlag = "UPDATE route SET `left` = 1 WHERE ";
 const getRouteFlags = "SELECT returned, `left` FROM route WHERE ";
 
 const getLastKnownRoute = "SELECT begin_time FROM route WHERE returned = 0 AND boat_name = "
+const getAllDailyRoutes = "SELECT boat_name, begin_time, end_time FROM route WHERE begin_time > "
 
 // Function for adding a boat that will be in use soon
 function addRouteForBoat(boatTimeObject, response) {
@@ -24,8 +25,8 @@ function addRouteForBoat(boatTimeObject, response) {
 
     console.log(timestamp.createTimestampSQLTimeCurrentDay(boatTimeObject.begin_time));
 
-    dbCore.doQuery(completeQuery, (results) => {
-        httpUtil.endResponse(response, results ? httpUtil.CREATED : httpUtil.BAD_REQUEST);
+    dbCore.doQuery(completeQuery, (results, error) => {
+        httpUtil.endResponse(response, error != null ? httpUtil.BAD_REQUEST : httpUtil.CREATED);
     });
 }
 
@@ -76,8 +77,24 @@ function getLastRoute(boatName) {
     });
 }
 
+// Get all the routes for the current day 
+function getDailyRoutes(response) {
+    var completeQuery = getAllDailyRoutes + "\"" + timestamp.createTimestampSQLTimeCurrentDay("00:00") + "\"";
+
+    // Get the first result of the list
+    dbCore.doQuery(completeQuery, (result, error) => { 
+        // Convert time to a hour and minute timestamp
+        result.forEach((value, index) => { 
+            result[index].begin_time = value.begin_time.getHours() + ":" + ((value.begin_time.getMinutes() == 0) ? "00" : "30");
+            result[index].end_time = value.end_time.getHours() + ":" + ((value.end_time.getMinutes() == 0) ? "00" : "30");
+        });
+        httpUtil.endResponse(response, error ? httpUtil.INTERNAL_ERROR : httpUtil.OK, JSON.stringify(result));
+    });
+}
+
 module.exports.setRouteFlag = setRouteFlag;
 
+module.exports.getDailyRoutes = getDailyRoutes;
 module.exports.hasRouteStarted = hasRouteStarted;
 module.exports.addRouteForBoat = addRouteForBoat;
 

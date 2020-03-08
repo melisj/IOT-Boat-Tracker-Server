@@ -74,6 +74,20 @@ input.button:active {
 	background: black;
 }
 
+
+input.reserved {
+	background: #333333;
+}
+
+input.reserved:hover {
+	background: #f86300;
+}
+
+input.reserved:active {
+	background: red;
+}
+
+
 footer {
 	background: black;
 

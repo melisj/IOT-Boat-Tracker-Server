@@ -48,16 +48,6 @@ function isRequestRestricted(requestString) {
     return false;
 }
 
-// Request weather info and send this info back into a string
-function recieveWeatherData(response) {
-    weather.requestWeather(HARDCODE_BOAT);
-
-    weather.on("recieved", (data, httpReturnStatus) => {
-        httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));
-        weather.removeAllListeners("recieved");
-    });
-}
-
 // Handle all the possible POST requests
 function handlePostRequest(request, response){
     var data = "";
@@ -91,6 +81,7 @@ function handleGetRequest(request, response){
     var cutDownUrl = request.url; 
     var getObject = null;
 
+    // Get the data send with the url
     if(dataAfterIndex != -1) {
         var getObject = queryParser.parse(cutDownUrl.substring(dataAfterIndex + 1));
         cutDownUrl = cutDownUrl.substring(0, dataAfterIndex);
@@ -111,28 +102,60 @@ function handleGetRequest(request, response){
         case "/client/boats": dbGps.getAllBoatInfo(response);
         break;
         // Do a request for location information about one boat
-        case "/client/boatlocation": 
-        try {
-            fileManager.loadLocationCache(getObject.boat_name, response);
-        }
-        catch(error) {
-            httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
-        }
+        case "/client/boatlocation": loadCacheAndRespond(response, getObject);
         break;
         // Do a request for the status of the boat (by checking distance)
-        case "/client/boatstatus": 
-        try{
-            dbGps.checkDistanceWithBaseLocation(getObject.boat_name, (result, error) => {
-                httpUtil.endResponse(response, error ? httpUtil.NO_CONTENT : httpUtil.OK, JSON.stringify(result));
-            });
-        }
-        catch(error) { 
-            httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
-        }
+        case "/client/boatstatus": getDistanceBetweenBoatAndBase(response, getObject)
+        break;
+        // Do a request for all the routes that have been done today
+        case "/client/boatroutes": dbRoute.getDailyRoutes(response);
+        break;
+        // Do a request for all locations of a route
+        case "/client/completeroute": getAllLocationsOfRoute(response, getObject);
         break;
         // Do a request for specific resources
         default : fileManager.loadFile(request.url.substring(1), response);
     }
 }
 
+// Request weather info and send this info back into a string
+function recieveWeatherData(response) {
+    weather.requestWeather(HARDCODE_BOAT);
 
+    weather.on("recieved", (data, httpReturnStatus) => {
+        httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));
+        weather.removeAllListeners("recieved");
+    });
+}
+
+// Call the function to get the distance between the boat and the calibrated base
+function getDistanceBetweenBoatAndBase(response, getObject) {
+    try{
+        dbGps.checkDistanceWithBaseLocation(getObject.boat_name, (result, error) => {
+            httpUtil.endResponse(response, error ? httpUtil.NO_CONTENT : httpUtil.OK, JSON.stringify(result));
+        });
+    }
+    catch(error) { 
+        httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
+    }
+}
+
+// Load the cache and respond to the client 
+function loadCacheAndRespond(response, getObject)  {
+    try {
+        fileManager.loadLocationCache(getObject.boat_name, response);
+    }
+    catch(error) {
+        httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
+    }
+}
+
+// Get all the locations of one route
+function getAllLocationsOfRoute(response, getObject) {
+    try {
+        dbGps.getCompleteRoute(response, getObject.boat_name, getObject.begin_time);
+    }
+    catch(error) {
+        httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
+    }
+}

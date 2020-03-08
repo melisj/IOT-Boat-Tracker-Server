@@ -54,7 +54,7 @@
 	
 					<br>
 	
-					<input type="submit" value="Use boat">
+					<input style="display: inline-block; width: 80px" type="submit" value="Use boat">
 				</form>
 	
 				<!-- Map -->
@@ -77,7 +77,7 @@
 			tiles.addTo(map);
 		</script>
 
-		<!-- Marker scripts -->
+		<!-- Marker function -->
 		<script id="currentLocation"> 
 			const boatMarker = L.marker([0,0]).addTo(map);
 			
@@ -87,8 +87,18 @@
 
 		</script>
 		
+		<!-- Route function -->
 		<script id="currentRoute"> 
+			const initialLine = [];
+			const boatRoute = L.polyline(initialLine, {color: "green"}).addTo(map);
 
+			function updateRouteLine(latitude, longitude) {
+				boatRoute.addLatLng([latitude, longitude]);
+			}
+
+			function resetRouteLine() {
+				boatRoute.setLatLngs(initialLine);
+			}
 		
 		</script>
 

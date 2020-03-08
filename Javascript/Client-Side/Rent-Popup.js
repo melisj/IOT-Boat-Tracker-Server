@@ -3,6 +3,7 @@
 
 // Cache button that was selected
 var selectedTimeButton;
+var selectedTimeButtonLastColor;
 var popupVisible;
 
 const form = document.getElementById("rent_form");
@@ -18,7 +19,7 @@ function togglePopup(forceVisibilityTo = null, clickedButton = null) {
 
 	// Get all the identifiers from the button clicked
 	if(clickedButton)
-		clickedButtonIdentifiers = clickedButton.className.split(" ");
+		clickedButtonIdentifiers = clickedButton.classList;
 
 	// Force the state for onload event
 	if(forceVisibilityTo != null)
@@ -35,24 +36,38 @@ function togglePopup(forceVisibilityTo = null, clickedButton = null) {
 	popup.style.display = popupVisible ? "none" : "block";
 
 	// Set visuals of the time button pressed
-	if(selectedTimeButton)
-		selectedTimeButton.style.background = popupVisible ? "#aaaaaa" : "black";
+	if(selectedTimeButton){
+		// Save the last known color
+		if(!popupVisible)
+			selectedTimeButtonLastColor = selectedTimeButton.style.background;
+		// Set the color
+		selectedTimeButton.style.background = popupVisible ? selectedTimeButtonLastColor : "black";
+	}
 
 	// Start getting the location of the boat
 	if(!popupVisible && clickedButton)
 		startRequestingLocation(clickedButtonIdentifiers[2]); // Returns boat name
 	else
 		stopTimeOutValue();
+
+	// Check if the user clicked on a route that is busy
+	if(!popupVisible && clickedButtonIdentifiers.contains(reservedTag)) {
+		// Get the name and get the begin time after the slash
+		getSelectedRoute(clickedButtonIdentifiers[2], clickedButton.className.split("/")[1]);
+	}
 }
 
 // Send the route back to the server
 function sendRouteRequest(event) {
 	event.preventDefault();
 
-	alert("route has been send");
+	if(selectedTimeButton.classList.contains(reservedTag)) {
+		alert("Boat is already reserved at this time");
+		return;
+	}
 
 	var rentInfo = {
-		boat_name: selectedTimeButton.className.split(" ")[2], // Returns third class name
+		boat_name: selectedTimeButton.classList[2], // Returns third class name
 		begin_time: form.begin_time.value,
 		end_time: form.end_time.value
 	};
@@ -64,6 +79,26 @@ function sendRouteRequest(event) {
 	// Set the header information 
 	ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
+	ajax.onreadystatechange = () => {
+		if(ajax.readyState == 4) {
+			alert(ajax.status == 201 ? "Route has been processed" : "Route processing has failed (cant overwrite route)");
+			getAllRoutesForToday();
+		}
+	};
+
 	ajax.send("boat_name=" + rentInfo.boat_name + "&begin_time=" + rentInfo.begin_time + "&end_time=" + rentInfo.end_time);
 }
 
+
+// Get the selected route from the database
+function getSelectedRoute(boatName, beginTime) {
+	resetRouteLine();
+
+	setTimeout(() => {
+		doRequestForData((result) => {
+			result.forEach(coordinate => {
+				updateRouteLine(coordinate.latitude, coordinate.longitude);
+			});
+		}, "/client/completeroute?boat_name=" + boatName + "&begin_time=" + beginTime);
+	}, 200)
+}

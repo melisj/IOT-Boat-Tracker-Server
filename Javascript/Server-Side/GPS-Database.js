@@ -11,7 +11,8 @@ const mathUtil = require("./Utils/MathUtil");
 const updateBoatLocation = "UPDATE boat SET ";
 const getBoatInfo = "SELECT `name` FROM boat";
 const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
-const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE `name` = "
+const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE `name` = \""
+const getAllLocationsFromRoute = "SELECT latitude, longitude FROM geolocation WHERE route_boat_name = \""
 
 // Distance from base location before the left/returned flag will be set (meters)
 const thresholdDistance = 100;
@@ -125,7 +126,7 @@ function recieveGpsLocation(gpsObject, response) {
 
 // Get info from the maps API about the distance from the calibrated base (true is away, false is at base)
 function checkDistanceWithBaseLocation(boatName, callback) {
-    var completeQuery = getDistanceBaseCurrent + "\"" + boatName + "\";";
+    var completeQuery = getDistanceBaseCurrent + boatName + "\";";
 
     dbCore.doQuery(completeQuery, (result, error) => {
         var isBeyondDistance = mathUtil.calculateStraightLineDistance(result[0]) > thresholdDistance;
@@ -133,6 +134,17 @@ function checkDistanceWithBaseLocation(boatName, callback) {
     });
 }
 
+// Get a specific route from the database
+function getCompleteRoute(response, boatName, begin_time) {
+    var completeQuery = getAllLocationsFromRoute + boatName + "\"" + 
+    " AND route_begin_time = \"" + timestamp.createTimestampSQLTimeCurrentDay(begin_time) + "\";";
+
+    dbCore.doQuery(completeQuery, (result, error) => {
+        httpUtil.endResponse(response, error ? httpUtil.INTERNAL_ERROR : httpUtil.OK, JSON.stringify(result));
+    });
+}
+
+module.exports.getCompleteRoute = getCompleteRoute;
 module.exports.checkDistanceWithBaseLocation = checkDistanceWithBaseLocation;
 module.exports.recieveGpsLocation = recieveGpsLocation;
 module.exports.getAllBoatInfo = getAllBoatInfo;
