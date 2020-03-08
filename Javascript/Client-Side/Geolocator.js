@@ -1,11 +1,27 @@
 // Script to be run in a browser to locate the user.
 // This will send the latitude and longitude to the server for the hardcoded boat
 
-// TODO hardcode boat
-var gpsForBoat = "viermineen"
+const gpsForm = document.querySelector("#gps-form");
+const gpsStatus = document.querySelector("#gps-status");
+
+gpsForm.addEventListener("submit", getLocation);
+
+var timer;
+var waitTimeForNextGPSLocation = 60 * 1000;
 
 // Attemts to request the geolocation data
-function getLocation() {
+function getLocation(event) {
+    if(event)
+        event.preventDefault();
+   
+    // Set the timer to call it again
+    if(timer)
+        clearTimeout(timer);
+    timer = setTimeout(() => getLocation(null), waitTimeForNextGPSLocation);
+
+    // Set the color of the gps status
+    gpsStatus.style.background = "#00ff00";
+
     if(navigator.geolocation)
         navigator.geolocation.getCurrentPosition(recieveLocation);
 }
@@ -18,11 +34,11 @@ function recieveLocation(location) {
         " Longitude: " + location.coords.longitude
     );
 
-    storeLocationInDatabase(location.coords);
+    storeLocationInDatabase(gpsForm.boat_name.value, location.coords);
 }
 
 // Function will call the server with a POST request to store the latest gps info
-function storeLocationInDatabase(coordinates) {
+function storeLocationInDatabase(boatName, coordinates) {
     var ajax = new XMLHttpRequest();
     ajax.open("POST", "/gps", true);
 
@@ -40,5 +56,5 @@ function storeLocationInDatabase(coordinates) {
     };
 
     // Send info
-    ajax.send("latitude=" + coordinates.latitude + "&longitude=" + coordinates.longitude);
+    ajax.send("boat_name=" + boatName + "&latitude=" + coordinates.latitude + "&longitude=" + coordinates.longitude);
 }

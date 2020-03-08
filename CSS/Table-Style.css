@@ -1,9 +1,10 @@
 body {
 	background: #ffffff;
-	font-size: 15px;
+	font-size: 16px;
 	font-family: 'Times New Roman', Times, serif;
 	text-align: center;
 	margin: 0px;
+	min-height: 800px;
 }
 
 #header {
@@ -14,15 +15,32 @@ body {
 
 #table-container {
 	display: block;
-	margin: 1% 25%;
+	margin: 1% 30%;
 	text-align: center;
 }
 
 #popup {
 	background: #bbbbbb;
-	display: block;
-	margin: 0% 25%;
-	text-align: left;
+	margin: 0% 0%;
+	text-align: middle;
+}
+
+#map {
+	height: 400px;
+	width: auto;
+	margin: 2%;
+}
+
+#available {
+	background: yellow;
+	height: 25px;
+	width: 25px;
+	margin: auto;
+	margin-bottom: 5px
+}
+
+p {
+	margin: 0px;
 }
 
 table {
@@ -49,9 +67,16 @@ input.button {
 }
 
 input.button:hover {
-	background: red;
+	background: #f86300;
 }
 
 input.button:active {
-	background: green;
+	background: black;
 }
+
+footer {
+	background: black;
+
+	height: 40px;
+}
+

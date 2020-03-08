@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+		integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+		crossorigin=""/>
+
+		<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+		integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+		crossorigin=""></script>
+  </head>
+  <body>
+     <div id="mapid" style="height: 1000px"></div>
+    <script>
+		const mymap = L.map("mapid").setView([52.3343, 4.9021], 13);
+
+		
+		const copyright = "&copy; <a='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributers";
+		const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+		const tiles = L.tileLayer(tileUrl, { copyright });
+
+		tiles.addTo(mymap);
+    </script>
+
+		<script>
+			L.marker([52.3343, 4.9021]).addTo(mymap);
+
+		</script>
+  </body>
+</html>

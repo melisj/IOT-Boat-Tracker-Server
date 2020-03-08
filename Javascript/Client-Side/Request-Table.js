@@ -9,8 +9,8 @@ const TIME_STEP_MINUTES = 30;
 
 // Function to be called to start the initialization of the table
 function requestTable() {
-	getAllTheBoats();
-	
+	doRequestForData((boatList) => createTable(boatList),
+	"/client/boats");
 }
 
 // Construct the table with the data
@@ -18,8 +18,6 @@ function createTable(boatList) {
 	var timeList = new Array(TOTAL_STEPS);
 
 	var boatTable = document.querySelector("#boat-table");
-
-	console.log(boatList[iBoat]);
 
 	// Get time variables
 	var currentTime = new Date();
@@ -40,7 +38,7 @@ function createTable(boatList) {
 		totalTable += "<tr class='boat-name " + boatList[iBoat].name + "'><th>" + boatList[iBoat].name + "</th>";
 			
 		for (var iTime = 0; iTime < TOTAL_STEPS; iTime++) {
-			totalTable += "	<th><input class='button " + timeList[iTime] + " " + boatList[iBoat].name + "' type='button' onclick='togglePopup(this)'></th>";
+			totalTable += "	<th><input class='button " + timeList[iTime] + " " + boatList[iBoat].name + "' type='button' onclick='togglePopup(null, this)'></th>";
 		}
 		
 		totalTable += "</tr>";
@@ -71,17 +69,3 @@ function getTimeStepOnIndex(currentTime, timeStep) {
 	return hours  + ":" + minutes;
 }
 
-// Get all the boats that are stored in the database
-function getAllTheBoats() {
-	var ajax = new XMLHttpRequest();
-
-	ajax.open("GET", "/client/boatinfo");
-	
-	ajax.onreadystatechange = () => {
-		if(ajax.readyState == 4 && ajax.status == 200) {
-			createTable(JSON.parse(ajax.responseText));
-		}
-	};
-
-	ajax.send();
-}

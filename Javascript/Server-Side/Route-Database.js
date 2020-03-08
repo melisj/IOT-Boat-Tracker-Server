@@ -2,6 +2,8 @@ const dbCore = require("./Database-Essentials");
 const timestamp = require("./Utils/Timestamp");
 const httpUtil = require("./Utils/Http");
 const EventEmitter = require('events');
+
+// You can subscribe to this event when you want to call for information about the status of the boat
 const routeInfo = new EventEmitter();
 
 // Queries
@@ -29,8 +31,6 @@ function addRouteForBoat(boatTimeObject, response) {
 
 // Check if the route requested has already finished
 function hasRouteStarted(boatName) {
-    getLastRoute(boatName);
-
     routeInfo.on("lastRoute", (timeResult) => {
         // Error out when nothing was found
         if(timeResult == null) {
@@ -43,11 +43,14 @@ function hasRouteStarted(boatName) {
         "AND boat_name = \"" + boatName + 
         "\";";
 
-        dbCore.doQuery(completeQuery, (result) => {
-            routeInfo.emit("done", result, timeResult);
+        dbCore.doQuery(completeQuery, (flagsResult) => {
+            routeInfo.emit("done", flagsResult, timeResult);
         });
         routeInfo.removeAllListeners("lastRoute");
     });
+
+    // Get last route will emit an event for lastRoute
+    getLastRoute(boatName);
 }
 
 // End the route by setting the returned flag to 1
@@ -67,6 +70,7 @@ function getLastRoute(boatName) {
     "begin_time < '" + timestamp.createTimestampSQL() + "'" +
     "ORDER BY begin_time DESC;";
 
+    // Get the first result of the list
     dbCore.doQuery(completeQuery, (result) => { 
         routeInfo.emit("lastRoute", result.length != 0 ? result[0].begin_time : null)
     });

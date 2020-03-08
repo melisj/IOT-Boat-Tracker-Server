@@ -3,13 +3,27 @@
 <html>
 
 	<head>
-		
+		<script src="../Javascript/Client-Side/Request-Data.js"></script>
 		<script src="../Javascript/Client-Side/Request-Table.js"></script>
 		<link rel="stylesheet" href= "../CSS/Table-Style.css">
 		
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+		integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+		crossorigin=""/>
+
+		<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+		integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+		crossorigin=""></script>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				togglePopup(true);	
+			});
+		</script>
+
 	</head>
 
-	<body onload="requestTable()">
+	<body onload="requestTable();">
 		
 		<div id="header">
 			<h1>Boat Tracker</h1>
@@ -19,27 +33,69 @@
 		<div id="table-container">
 			<!-- Time table with all the boats available -->
 			<table id="boat-table"></table>
-		</div>
 
-		<div style="display:none;" id="popup">
+			<div id="popup">
 			
-			<h1>
-				Afschrijving
-			</h1>
+				<h1>
+					Afschrijving
+				</h1>
+	
+				<p>Current availability <br> = </p>
+				<div id="available"></div>
 
-			<form id="rent_form">
-				<label>Begin Time</label>
-				<input readonly id="rent_form_begin_time" name="begin_time" type="time">
-				<label>End Time</label>
-				<input name="end_time" type="time" required>
-
-				<br>
-
-				<input type="submit" value="Use boat">
-			</form>
+				<form id="rent_form">
+					<label>Begin Time</label>
+					<br>
+					<input readonly id="rent_form_begin_time" name="begin_time" type="time"> 
+					<br>
+					<label>End Time</label>
+					<br>
+					<input name="end_time" type="time" required>
+	
+					<br>
+	
+					<input type="submit" value="Use boat">
+				</form>
+	
+				<!-- Map -->
+				<div id="map"></div>
+			</div>
 		</div>
-		
+
 		<script src="../Javascript/Client-Side/Rent-Popup.js"></script>
+
+		<!-- Map script -->
+		<script>
+			const map = L.map("map").setView([52.3343, 4.9021], 14);
+	
+			
+			const copyright = "&copy; <a='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributers";
+			const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+			const tiles = L.tileLayer(tileUrl, { copyright });
+			map.invalidateSize();
+	
+			tiles.addTo(map);
+		</script>
+
+		<!-- Marker scripts -->
+		<script id="currentLocation"> 
+			const boatMarker = L.marker([0,0]).addTo(map);
+			
+			function updateMarker(latitude, longitude) {
+				boatMarker.setLatLng([latitude, longitude]);
+			}
+
+		</script>
+		
+		<script id="currentRoute"> 
+
+		
+		</script>
+
 	</body>
+
+	<footer>
+		<script src="../Javascript/Client-Side/Request-Location.js"></script>
+	</footer>
 
 </html>

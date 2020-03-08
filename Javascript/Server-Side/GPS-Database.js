@@ -11,7 +11,7 @@ const mathUtil = require("./Utils/MathUtil");
 const updateBoatLocation = "UPDATE boat SET ";
 const getBoatInfo = "SELECT `name` FROM boat";
 const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
-const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat"
+const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE `name` = "
 
 // Distance from base location before the left/returned flag will be set (meters)
 const thresholdDistance = 100;
@@ -36,15 +36,15 @@ function calibrateBaseLocation(boatName, response) {
 }
 
 // Update the current location for a specific boat
-function updateCurrentLocation (boatName, gpsObject) {
+function updateCurrentLocation (gpsObject) {
     // Store the position in the cache
-    fileManager.saveLocationCache(boatName, gpsObject);
+    fileManager.saveLocationCache(gpsObject);
 
     // Store the position in the database
     var completeQuery = updateBoatLocation + 
     "cur_latitude = '" + gpsObject.latitude + 
     "', cur_longitude = '" + gpsObject.longitude +
-    "' WHERE name = '" + boatName + "';"; 
+    "' WHERE name = '" + gpsObject.boat_name + "';"; 
 
     dbCore.doQuery(completeQuery);
 } 
@@ -63,11 +63,6 @@ function addLocationObject(boatName, beginTime, latitude, longitude) {
     dbCore.doQuery(completeQuery);
 }
 
-// Function for the front end to collect all the reserved boats
-function getAllRouteInfo() {
-
-}
-
 // Retrieve all the boats in the database
 function getAllBoatInfo(response) {
     dbCore.doQuery(getBoatInfo, (result) => {
@@ -76,13 +71,13 @@ function getAllBoatInfo(response) {
 }
 
 // Recieve an gps location from a boat and store it appropriately
-function recieveGpsLocation(boatName, gpsObject, response) {
+function recieveGpsLocation(gpsObject, response) {
     try {
         // Store it in the database in the cur position of the boat
-        updateCurrentLocation(boatName, gpsObject);
+        updateCurrentLocation(gpsObject);
 
         // Make a call for checking if the boat has already been returned or has left the base
-        dbRoute.hasRouteStarted(boatName);
+        dbRoute.hasRouteStarted(gpsObject.boat_name);
 
         // Check what route reservation is active right now
         dbRoute.routeInfo.on("done", (result, timeResult) => {
@@ -99,21 +94,21 @@ function recieveGpsLocation(boatName, gpsObject, response) {
 
             // Check if the boat is gone (from database)
             if(boatReturned == 0 && boatLeft == 1) {
-                addLocationObject(boatName, timeResult, gpsObject.latitude, gpsObject.longitude);
+                addLocationObject(gpsObject.boat_name, timeResult, gpsObject.latitude, gpsObject.longitude);
                 
                 // Check if boat is back (from gps data)
-                checkDistanceWithBaseLocation(boatName, (isOutsideBase) => {
+                checkDistanceWithBaseLocation(gpsObject.boat_name, (isOutsideBase) => {
                     // Set returned flag
                     if(!isOutsideBase)
-                        dbRoute.setRouteFlag(boatName, timeResult, true);
+                        dbRoute.setRouteFlag(gpsObject.boat_name, timeResult, true);
                 });
             }
             // Boat hasnt left yet (check if boat is leaving)
             else if(boatLeft == 0) {
-                checkDistanceWithBaseLocation(boatName, (isOutsideBase) => {
+                checkDistanceWithBaseLocation(gpsObject.boat_name, (isOutsideBase) => {
                     // Set left flag
                     if(isOutsideBase)
-                        dbRoute.setRouteFlag(boatName, timeResult, false);
+                        dbRoute.setRouteFlag(gpsObject.boat_name, timeResult, false);
                 });
             }
 
@@ -130,13 +125,15 @@ function recieveGpsLocation(boatName, gpsObject, response) {
 
 // Get info from the maps API about the distance from the calibrated base (true is away, false is at base)
 function checkDistanceWithBaseLocation(boatName, callback) {
-    dbCore.doQuery(getDistanceBaseCurrent, (result) => {
+    var completeQuery = getDistanceBaseCurrent + "\"" + boatName + "\";";
+
+    dbCore.doQuery(completeQuery, (result, error) => {
         var isBeyondDistance = mathUtil.calculateStraightLineDistance(result[0]) > thresholdDistance;
-        callback(isBeyondDistance);
+        callback(isBeyondDistance, error);
     });
 }
 
+module.exports.checkDistanceWithBaseLocation = checkDistanceWithBaseLocation;
 module.exports.recieveGpsLocation = recieveGpsLocation;
-module.exports.getAllRouteInfo = getAllRouteInfo;
 module.exports.getAllBoatInfo = getAllBoatInfo;
 module.exports.calibrateLocation = calibrateBaseLocation;

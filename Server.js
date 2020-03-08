@@ -77,7 +77,7 @@ function handlePostRequest(request, response){
             case "/client/sendroute": dbRoute.addRouteForBoat(postObject, response);
             break;
             // Save the gps location
-            case "/gps": dbGps.recieveGpsLocation(HARDCODE_BOAT, postObject, response);
+            case "/gps": dbGps.recieveGpsLocation(postObject, response);
             break;
         }
 
@@ -87,10 +87,19 @@ function handlePostRequest(request, response){
 
 // Handle all the possible GET requests
 function handleGetRequest(request, response){ 
-    switch(request.url)
+    var dataAfterIndex = request.url.indexOf("?");
+    var cutDownUrl = request.url; 
+    var getObject = null;
+
+    if(dataAfterIndex != -1) {
+        var getObject = queryParser.parse(cutDownUrl.substring(dataAfterIndex + 1));
+        cutDownUrl = cutDownUrl.substring(0, dataAfterIndex);
+    }
+
+    switch(cutDownUrl)
     {
         // Do a homepage request
-        case "/" : fileManager.loadFile("HTML/GPS.html", response);
+        case "/" : fileManager.loadFile("HTML/gps.html", response);
         break;
         // Do a arduino request for the weather (close response when data is collected)
         case "/arduino/weather": recieveWeatherData(response);
@@ -99,7 +108,27 @@ function handleGetRequest(request, response){
         case "/arduino/calibrate": dbGps.calibrateLocation(HARDCODE_BOAT, response);
         break;
         // Do a request for all the boat info there is
-        case "/client/boatinfo": dbGps.getAllBoatInfo(response);
+        case "/client/boats": dbGps.getAllBoatInfo(response);
+        break;
+        // Do a request for location information about one boat
+        case "/client/boatlocation": 
+        try {
+            fileManager.loadLocationCache(getObject.boat_name, response);
+        }
+        catch(error) {
+            httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
+        }
+        break;
+        // Do a request for the status of the boat (by checking distance)
+        case "/client/boatstatus": 
+        try{
+            dbGps.checkDistanceWithBaseLocation(getObject.boat_name, (result, error) => {
+                httpUtil.endResponse(response, error ? httpUtil.NO_CONTENT : httpUtil.OK, JSON.stringify(result));
+            });
+        }
+        catch(error) { 
+            httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
+        }
         break;
         // Do a request for specific resources
         default : fileManager.loadFile(request.url.substring(1), response);

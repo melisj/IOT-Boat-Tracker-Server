@@ -3,33 +3,53 @@
 <html>
 
 	<head>
+		<script src="../Javascript/Client-Side/Request-Data.js"></script>
 		
-		<script src="../Javascript/Client-Side/Geolocator.js"></script>
-		<link rel="stylesheet" href= "../CSS/Table-Style.css">
+		<link rel="stylesheet" href= "../CSS/GPS.css">
 		
-		<script>
-
-			function startGPS() {
-				getLocation();
-				clearTimeout();
-				setTimeout(startGPS, 60 * 1000);
-			}
-
-		</script>
-
 	</head>
 
-	<body onload="startGPS()">
+	<body onload="storeAllBoatsInList()">
 		<h1>
-
 			This is the GPS site, <br>
 			this will send info to the server about the position of the tracker
-
-			
 		</h1>
 
-		<label>START GPS (use when it hasn't started automatically)</label>
-		<input class="button" type="button" onclick="startGPS()">
+		<div>
+			<form id="gps-form">
+				<label>Name of the boat</label>
+				<br>
+				<input name="boat_name" list="boats" required>
+				<br>
+				<label>START GPS</label>
+				<input class="button" type="submit" value="Start GPS">
+
+				<datalist id="boats">
+				</datalist>
+			</form>
+
+			<div id="gps-status">
+				<p>Is Sending GPS?</p>
+			</div>
+		</div>
+
+		<script>
+			const boatInputList = document.querySelector("#boats");
+
+			function storeAllBoatsInList() {
+				var inputList = "";
+					
+				doRequestForData((boatList) => {
+					for (var i = 0; i < boatList.length; i++) {
+						inputList += "<option value=" + boatList[i].name + ">"
+					}
+					boatInputList.innerHTML = inputList;
+				},
+				"/client/boats");
+			
+			}
+		</script>
+		<script src="../Javascript/Client-Side/Geolocator.js"></script>
 	</body>
 
 </html>
