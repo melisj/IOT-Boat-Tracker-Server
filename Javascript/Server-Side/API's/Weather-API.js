@@ -18,7 +18,7 @@ const dataRetrievedEvent = new EventEmitter();
 const rainChanceMaybe = 0.40;
 const rainChangeHighProbability = 0.70;
 // Data regarding the intesity of the rain (mm in a hour) source: https://en.wikipedia.org/wiki/Rain#Intensity
-const rainAmountLight = 2.5;
+const rainAmountLight = 2;
 const rainAmountHeavy = 7;
 // windspeed variables
 const windSpeedHeavy = 70; 
@@ -58,18 +58,19 @@ function doWeatherRequestForLocation(coordinates) {
 // Each value represents an led index on the arduino (0 = no light, 1 = yellow, 2 = red)
 function weatherRequestComplete(data, httpStatus) {
     var jsonData = JSON.parse(data).hourly.data[0];
+    console.log(jsonData);
 
     var precipProbability = jsonData.precipProbability;
     var precipIntensity = jsonData.precipIntensity;
     var windspeed = jsonData.windspeed;
 
     // Rainchance 0 = nearly no chance, 1 = maybe, 2 is high chance
-    var rainChance = precipProbability > rainChangeHighProbability ? 2 : precipProbability > rainChanceMaybe ? 1 : 0; 
+    var rainChance = precipProbability >= rainChangeHighProbability ? 2 : precipProbability >= rainChanceMaybe ? 1 : 0; 
 
     var returnObject = {
-        lightRain: precipIntensity > rainAmountLight ? rainChance : 0,
-        heavyRain: precipIntensity > rainAmountHeavy ? rainChance : 0,
-        heavyWind: windspeed > windSpeedDangerous ? 2 : windspeed > windSpeedHeavy ? 1 : 0
+        lightRain: precipIntensity >= rainAmountLight ? rainChance : 0,
+        heavyRain: precipIntensity >= rainAmountHeavy ? rainChance : 0,
+        heavyWind: windspeed >= windSpeedDangerous ? 2 : windspeed >= windSpeedHeavy ? 1 : 0
     };
 
     console.log(returnObject);
