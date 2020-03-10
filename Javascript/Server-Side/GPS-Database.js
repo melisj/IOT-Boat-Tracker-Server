@@ -9,13 +9,12 @@ const mathUtil = require("./Utils/MathUtil");
 
 // Queries
 const updateBoatLocation = "UPDATE boat SET ";
-const getBoatInfo = "SELECT `name` FROM boat";
 const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
 const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE `name` = \""
 const getAllLocationsFromRoute = "SELECT latitude, longitude FROM geolocation WHERE route_boat_name = \""
 
 // Distance from base location before the left/returned flag will be set (meters)
-const thresholdDistance = 100;
+const thresholdDistance = 50;
 
 // Function for storing a new calibrated location for the specified boat
 function calibrateBaseLocation(boatName, response) {
@@ -62,13 +61,6 @@ function addLocationObject(boatName, beginTime, latitude, longitude) {
 
     // Query to the database
     dbCore.doQuery(completeQuery);
-}
-
-// Retrieve all the boats in the database
-function getAllBoatInfo(response) {
-    dbCore.doQuery(getBoatInfo, (result) => {
-        httpUtil.endResponse(response, result ? httpUtil.OK : httpUtil.INTERNAL_ERROR, JSON.stringify(result)); // Respond
-    }); 
 }
 
 // Recieve an gps location from a boat and store it appropriately
@@ -147,5 +139,4 @@ function getCompleteRoute(response, boatName, begin_time) {
 module.exports.getCompleteRoute = getCompleteRoute;
 module.exports.checkDistanceWithBaseLocation = checkDistanceWithBaseLocation;
 module.exports.recieveGpsLocation = recieveGpsLocation;
-module.exports.getAllBoatInfo = getAllBoatInfo;
 module.exports.calibrateLocation = calibrateBaseLocation;

@@ -98,8 +98,8 @@ function handleGetRequest(request, response){
         // Do a arduino request for the calibration
         case "/arduino/calibrate": dbGps.calibrateLocation(HARDCODE_BOAT, response);
         break;
-        // Do a request for all the boat info there is
-        case "/client/boats": dbGps.getAllBoatInfo(response);
+        // Do a request for all the boat names
+        case "/client/boats": dbGps.getBoatNames(response);
         break;
         // Do a request for location information about one boat
         case "/client/boatlocation": loadCacheAndRespond(response, getObject);

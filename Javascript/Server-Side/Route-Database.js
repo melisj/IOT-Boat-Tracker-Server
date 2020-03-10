@@ -15,6 +15,8 @@ const getRouteFlags = "SELECT returned, `left` FROM route WHERE ";
 const getLastKnownRoute = "SELECT begin_time FROM route WHERE returned = 0 AND boat_name = "
 const getAllDailyRoutes = "SELECT boat_name, begin_time, end_time FROM route WHERE begin_time > "
 
+const getBoatInfo = "SELECT `name` FROM boat";
+
 // Function for adding a boat that will be in use soon
 function addRouteForBoat(boatTimeObject, response) {
     var completeQuery = createNewRoute + 
@@ -92,10 +94,18 @@ function getDailyRoutes(response) {
     });
 }
 
+// Retrieve all the boats in the database
+function getBoatNames(response) {
+    dbCore.doQuery(getBoatInfo, (result) => {
+        httpUtil.endResponse(response, result ? httpUtil.OK : httpUtil.INTERNAL_ERROR, JSON.stringify(result)); // Respond
+    }); 
+}
+
 module.exports.setRouteFlag = setRouteFlag;
 
 module.exports.getDailyRoutes = getDailyRoutes;
 module.exports.hasRouteStarted = hasRouteStarted;
 module.exports.addRouteForBoat = addRouteForBoat;
+module.exports.getBoatNames = getBoatNames;
 
 module.exports.routeInfo = routeInfo;
