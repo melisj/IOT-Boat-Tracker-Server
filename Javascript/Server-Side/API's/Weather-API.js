@@ -62,7 +62,7 @@ function weatherRequestComplete(data, httpStatus) {
 
     var precipProbability = jsonData.precipProbability;
     var precipIntensity = jsonData.precipIntensity;
-    var windspeed = jsonData.windspeed;
+    var windspeed = jsonData.windGust;
 
     // Rainchance 0 = nearly no chance, 1 = maybe, 2 is high chance
     var rainChance = precipProbability >= rainChangeHighProbability ? 2 : precipProbability >= rainChanceMaybe ? 1 : 0; 

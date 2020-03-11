@@ -8,8 +8,6 @@ const dbRoute = require("./Javascript/Server-Side/Route-Database");
 const fileManager = require("./Javascript/Server-Side/File-Manager");
 const httpUtil = require("./Javascript/Server-Side/Utils/Http");
 
-const HARDCODE_BOAT = "viermineen";
-
 // Create a server
 const server = http.createServer((request, response) => {
     console.log(request.url);
@@ -69,6 +67,9 @@ function handlePostRequest(request, response){
             // Save the gps location
             case "/gps": dbGps.recieveGpsLocation(postObject, response);
             break;
+            // Do a arduino request for the calibration
+            case "/arduino/calibrate": dbGps.calibrateLocation(postObject, response);
+            break;
         }
 
         request.removeAllListeners();
@@ -93,11 +94,8 @@ function handleGetRequest(request, response){
         case "/" : fileManager.loadFile("HTML/gps.html", response);
         break;
         // Do a arduino request for the weather (close response when data is collected)
-        case "/arduino/weather": recieveWeatherData(response);
+        case "/arduino/weather": recieveWeatherData(response, getObject);
         return;
-        // Do a arduino request for the calibration
-        case "/arduino/calibrate": dbGps.calibrateLocation(HARDCODE_BOAT, response);
-        break;
         // Do a request for all the boat names
         case "/client/boats": dbRoute.getBoatNames(response);
         break;
@@ -119,8 +117,8 @@ function handleGetRequest(request, response){
 }
 
 // Request weather info and send this info back into a string
-function recieveWeatherData(response) {
-    weather.requestWeather(HARDCODE_BOAT);
+function recieveWeatherData(response, getObject) {
+    weather.requestWeather(getObject.boat_name);
 
     weather.on("recieved", (data, httpReturnStatus) => {
         httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));

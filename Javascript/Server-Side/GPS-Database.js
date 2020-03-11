@@ -17,14 +17,14 @@ const getAllLocationsFromRoute = "SELECT latitude, longitude FROM geolocation WH
 const thresholdDistance = 50;
 
 // Function for storing a new calibrated location for the specified boat
-function calibrateBaseLocation(boatName, response) {
-    var newLocation = fileManager.loadLocationCache(boatName);
+function calibrateBaseLocation(boatInfo, response) {
+    var newLocation = fileManager.loadLocationCache(boatInfo.boat_name);
 
     // Complete the query
     var completeQuery = updateBoatLocation + 
     "base_latitude = '" + newLocation.latitude + 
     "', base_longitude = '" + newLocation.longitude +
-    "' WHERE name = '" + boatName + "';"; 
+    "' WHERE name = '" + boatInfo.boat_name + "';"; 
 
     // Query to the database
     dbCore.doQuery(completeQuery, (result) => {
