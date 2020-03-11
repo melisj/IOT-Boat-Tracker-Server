@@ -99,9 +99,11 @@ function recieveGpsLocation(gpsObject, response) {
             // Boat hasnt left yet (check if boat is leaving)
             else if(boatLeft == 0) {
                 checkDistanceWithBaseLocation(gpsObject.boat_name, (isOutsideBase) => {
-                    // Set left flag
-                    if(isOutsideBase)
+                    // Set left flag and add an location object
+                    if(isOutsideBase) {
+                        addLocationObject(gpsObject.boat_name, timeResult, gpsObject.latitude, gpsObject.longitude);
                         dbRoute.setRouteFlag(gpsObject.boat_name, timeResult, false);
+                    }
                 });
             }
 
