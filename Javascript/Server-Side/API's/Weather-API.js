@@ -11,6 +11,7 @@ const DEFAULT_METRICS = "&si";
 const https = require("https");
 const EventEmitter = require('events');
 const fileManager = require("../File-Manager");
+const httpUtil = require("../Utils/Http");
 const hoursForecast = 2;
 const dataRetrievedEvent = new EventEmitter();
 
@@ -26,7 +27,13 @@ const windSpeedDangerous = 100;
 
 
 function checkWeatherForBoat(boatName) {
-    doWeatherRequestForLocation(fileManager.loadLocationCache(boatName));
+    var coordinates = fileManager.loadLocationCache(boatName);
+
+    if(coordinates != null)
+        doWeatherRequestForLocation(coordinates);
+    // Request failed
+    else
+        dataRetrievedEvent.emit("recieved", "", httpUtil.BAD_REQUEST);
 }
 
 // Send a request to the Dark Sky Weather API with the correct coordinates

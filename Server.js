@@ -118,12 +118,16 @@ function handleGetRequest(request, response){
 
 // Request weather info and send this info back into a string
 function recieveWeatherData(response, getObject) {
-    weather.requestWeather(getObject.boat_name);
+    if(getObject){
+        weather.on("recieved", (data, httpReturnStatus) => {
+            httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));
+            weather.removeAllListeners("recieved");
+        });
 
-    weather.on("recieved", (data, httpReturnStatus) => {
-        httpUtil.endResponse(response, httpReturnStatus, JSON.stringify(data));
-        weather.removeAllListeners("recieved");
-    });
+        weather.requestWeather(getObject.boat_name);
+    }
+    else 
+        httpUtil.endResponse(response, httpUtil.BAD_REQUEST);
 }
 
 // Call the function to get the distance between the boat and the calibrated base
