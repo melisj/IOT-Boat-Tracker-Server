@@ -6,7 +6,7 @@ const fs = require("fs");
 const httpUtil = require("./Utils/Http");
 
 // Json file location
-const jsonPath = "./Server-Resources/Caching.json";
+const jsonPath = "./Server-Files/Resources/Caching.json";
 
 // Load a file from the root of the server
 function loadFile(path, response) {
@@ -20,7 +20,7 @@ function loadFile(path, response) {
     // If that doesnt work, try to get the html path
     catch(error) {
         file = loadHtmlFileFallback(path);
-    }
+    }-
 
     httpUtil.endResponse(response, file ? httpUtil.OK : httpUtil.NOT_FOUND, file);
 }
@@ -31,7 +31,7 @@ function loadHtmlFileFallback(path) {
     var file
 
     // Add html to the path
-    try { file = fs.readFileSync("HTML/" + path + ".html"); }
+    try { file = fs.readFileSync("Client-Files/HTML/" + path + ".html"); }
     catch(error) { console.error(error);}
 
     return file;
@@ -43,15 +43,13 @@ function saveToJsonCache(gpsObject) {
 
     try {
         // Update the boat in the cache
-        if(lastLocations.boats[0][gpsObject.boat_name]) { 
-            lastLocations.boats[0][gpsObject.boat_name].latitude = gpsObject.latitude
-            lastLocations.boats[0][gpsObject.boat_name].longitude = gpsObject.longitude
-        }
+        lastLocations.boats[0][gpsObject.boat_name].latitude = gpsObject.latitude
+        lastLocations.boats[0][gpsObject.boat_name].longitude = gpsObject.longitude
     }
     catch(error) {
         // Add the boat to the cache
-        var boatJson = "{\"" + gpsObject.boat_name + "\": {\"latitude\":" + gpsObject.latitude + ", \"longitude\":" + gpsObject.longitude + "}}"
-        lastLocations.boats.push(JSON.parse(boatJson));        
+        var boatJson = "{\"" + gpsObject.boat_name + "\": {\"latitude\": \"" + gpsObject.latitude + "\", \"longitude\": \"" + gpsObject.longitude + "\"}}"
+        lastLocations.boats.push(JSON.parse(boatJson));    
     }
 
     fs.writeFileSync(jsonPath, JSON.stringify(lastLocations));

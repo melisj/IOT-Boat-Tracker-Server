@@ -1,6 +1,8 @@
+// Script helping with handeling requests for storing and retrieving route/reservation info
+
 const dbCore = require("./Database-Essentials");
-const timestamp = require("./Utils/Timestamp");
-const httpUtil = require("./Utils/Http");
+const timestamp = require("../Utils/Timestamp");
+const httpUtil = require("../Utils/Http");
 const EventEmitter = require('events');
 
 // You can subscribe to this event when you want to call for information about the status of the boat

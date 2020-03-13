@@ -2,11 +2,14 @@
 
 const http = require("http");
 const queryParser = require("querystring");
-const weather = require("./Javascript/Server-Side/API's/Weather-API");
-const dbGps = require("./Javascript/Server-Side/GPS-Database");
-const dbRoute = require("./Javascript/Server-Side/Route-Database");
-const fileManager = require("./Javascript/Server-Side/File-Manager");
-const httpUtil = require("./Javascript/Server-Side/Utils/Http");
+const weather = require("./Server-Files/Scripts/API's/Weather-API");
+const dbGps = require("./Server-Files/Scripts/Database/GPS-Database");
+const dbRoute = require("./Server-Files/Scripts/Database/Route-Database");
+const fileManager = require("./Server-Files/Scripts/File-Manager");
+const httpUtil = require("./Server-Files/Scripts/Utils/Http");
+
+// Homepage is the gps site
+const homepage = "Client-Files/HTML/gps.html";
 
 // Create a server
 const server = http.createServer((request, response) => {
@@ -91,7 +94,7 @@ function handleGetRequest(request, response){
     switch(cutDownUrl)
     {
         // Do a homepage request
-        case "/" : fileManager.loadFile("HTML/gps.html", response);
+        case "/" : fileManager.loadFile(homepage, response);
         break;
         // Do a arduino request for the weather (close response when data is collected)
         case "/arduino/weather": recieveWeatherData(response, getObject);
