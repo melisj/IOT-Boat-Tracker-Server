@@ -12,10 +12,11 @@ const reservedTag = "reserved";
 
 // Function to be called to start the initialization of the table
 function requestTable() {
-	doRequestForData((boatList) => createTable(boatList),
+	doRequestForData((boatList) => { 
+		createTable(boatList);
+		getAllRoutesForToday();
+	},
 	"/client/boats");
-
-	setTimeout(getAllRoutesForToday, 250);
 }
 
 // Construct the table with the data

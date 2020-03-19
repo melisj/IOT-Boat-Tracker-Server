@@ -1,3 +1,5 @@
+// Functions for creating a SQL timestamp
+
 function createTimestampSQL(){
     var currentTime = new Date();
 

@@ -1,11 +1,11 @@
 // Script to maintain all the incoming location data from the GPS
 
 const dbCore = require("./Database-Essentials");
-const timestamp = require("./Utils/Timestamp");
-const fileManager = require("./File-Manager");
+const timestamp = require("../Utils/Timestamp");
+const fileManager = require("../File-Manager");
 const dbRoute = require("./Route-Database");
-const httpUtil = require("./Utils/Http");
-const mathUtil = require("./Utils/MathUtil");
+const httpUtil = require("../Utils/Http");
+const mathUtil = require("../Utils/MathUtil");
 
 // Queries
 const updateBoatLocation = "UPDATE boat SET ";
