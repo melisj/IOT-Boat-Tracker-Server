@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+		<link rel="stylesheet" href= "../CSS/Table-Style.css">
+
+		<script>
+			const listNotes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+			const audioparts = 32;
+			var audioList = new Array(audioparts);
+			for(var i = 0; i < audioList.length; i++) {
+				audioList[i] = "-";
+			};
+
+			function drawTable() {
+				var table = document.querySelector("#table");
+				
+				// Start the table
+				var totalTable = "";
+					
+				for(var iNote = 0; iNote < listNotes.length; iNote++) 
+				{
+					totalTable += "<tr class='" + listNotes[iNote] + "'><th>" + listNotes[iNote] + "</th>";
+						
+					for (var iTime = 0; iTime < audioparts; iTime++) {
+						totalTable += "	<th><input class='button " + iTime + 
+							"' type='button' onclick='toggleButton(\"" + listNotes[iNote] + "\", " + iTime + ", this);'></th>";
+					}
+					
+					totalTable += "</tr>";
+				}
+				
+				// Assign value to the table
+				table.innerHTML = totalTable;
+			}
+
+			function toggleButton(note, time, button) {
+				if(audioList[time] == "-")
+					audioList[time] = note;
+				else if (audioList[time] == note)
+					audioList[time] = "-";
+				else {
+					setButtonsInactive(time);
+					audioList[time] = note;
+				}
+
+				button.style.background = button.style.background == "black" ? "#aaaaaa" : "black";
+
+				computeSound();
+			}
+
+			function setButtonsInactive(time) {
+				var buttons = document.getElementsByClassName(time);
+
+				for(var i = 0; i < buttons.length; i++) {
+					buttons[i].style.background = "#aaaaaa";
+				}
+			}
+
+			function computeSound() {
+				var output = document.querySelector("#output");
+				var audioTimeStep = document.querySelector("#timestep").value;
+				var totalAudioString = "[";
+				
+				// Check the last index that should be addded
+				// Trim the silent ends of the audio
+				var lastIndex = audioList.length;
+				for(var i = audioList.length - 1; i >= 0; i--) {
+					if(audioList[i] == "-")
+						lastIndex = i;
+					else
+						break;
+				};
+
+				// Translate the audio to a string
+				audioList.forEach((note, index) => {
+					if(index < lastIndex)
+						totalAudioString += note + "" + audioTimeStep + "/";
+				});
+
+				
+				totalAudioString += "]"
+				output.textContent = totalAudioString;
+			}
+		</script>
+  </head>
+  <body onload="drawTable()">
+		<div style="margin:auto;">
+			<table id="table"></table>
+
+
+		</div>
+
+		<div style="margin:1% auto">
+			<input type="button" onclick="computeSound()" value="Generate output"></button>
+			<input type="number" id="timestep"></button>
+		</div>
+		<div>
+			<p>output</p>
+			<p id="output"></p>
+		</div>
+	</body>
+</html>
