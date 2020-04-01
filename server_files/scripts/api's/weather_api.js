@@ -10,8 +10,8 @@ const DEFAULT_METRICS = "&si";
 
 const https = require("https");
 const EventEmitter = require('events');
-const fileManager = require("../File-Manager");
-const httpUtil = require("../Utils/Http");
+const fileManager = require("../file_manager");
+const httpUtil = require("../utils/http_util");
 const hoursForecast = 2;
 const dataRetrievedEvent = new EventEmitter();
 

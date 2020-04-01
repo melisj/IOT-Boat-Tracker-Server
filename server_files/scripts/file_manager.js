@@ -3,10 +3,10 @@
 // This will also handle the gps cache with the Json file
 
 const fs = require("fs");
-const httpUtil = require("./Utils/Http");
+const httpUtil = require("./utils/http_util");
 
 // Json file location
-const jsonPath = "./Server-Files/Resources/Caching.json";
+const jsonPath = "./server_files/resources/caching.json";
 
 // Load a file from the root of the server
 function loadFile(path, response) {
@@ -31,7 +31,7 @@ function loadHtmlFileFallback(path) {
     var file
 
     // Add html to the path
-    try { file = fs.readFileSync("Client-Files/HTML/" + path + ".html"); }
+    try { file = fs.readFileSync("client_files/html/" + path + ".html"); }
     catch(error) { console.error(error);}
 
     return file;

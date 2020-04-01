@@ -2,14 +2,14 @@
 
 const http = require("http");
 const queryParser = require("querystring");
-const weather = require("./Server-Files/Scripts/API's/Weather-API");
-const dbGps = require("./Server-Files/Scripts/Database/GPS-Database");
-const dbRoute = require("./Server-Files/Scripts/Database/Route-Database");
-const fileManager = require("./Server-Files/Scripts/File-Manager");
-const httpUtil = require("./Server-Files/Scripts/Utils/Http");
+const weather = require("./server_files/scripts/api's/weather_api");
+const dbGps = require("./server_files/scripts/database/gps_database");
+const dbRoute = require("./server_files/scripts/database/route_database");
+const fileManager = require("./server_files/scripts/file_manager");
+const httpUtil = require("./server_files/scripts/utils/http_util");
 
 // Homepage is the gps site
-const homepage = "Client-Files/HTML/gps.html";
+const homepage = "client_files/html/gps.html";
 
 // Create a server
 const server = http.createServer((request, response) => {
@@ -60,8 +60,6 @@ function handlePostRequest(request, response){
     request.on("end", () => {
         var postObject = queryParser.parse(data);
         console.log(postObject);
-        // TODO clean input
-        
 
         switch(request.url) {
             // Request from client to create a new route

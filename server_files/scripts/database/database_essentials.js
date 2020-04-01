@@ -23,12 +23,12 @@ function createDatabaseConnection() {
 }
 
 // Query something
-function queryToDatabase(query, callback) {
+function queryToDatabase(query, variables, callback) {
     var connection = createDatabaseConnection();
 
     if(connection) {    
         // Do the query
-        connection.query(query, (error, result) => {
+        connection.query(query, variables, (error, result) => {
             if(error) console.log(error);
 
             // Send out the callback with the results and connection when keepConnection is true

@@ -1,17 +1,18 @@
 // Script to maintain all the incoming location data from the GPS
 
-const dbCore = require("./Database-Essentials");
-const timestamp = require("../Utils/Timestamp");
-const fileManager = require("../File-Manager");
-const dbRoute = require("./Route-Database");
-const httpUtil = require("../Utils/Http");
-const mathUtil = require("../Utils/MathUtil");
+const dbCore = require("./database_essentials");
+const timestamp = require("../utils/timestamp");
+const fileManager = require("../file_manager");
+const dbRoute = require("./route_database");
+const httpUtil = require("../utils/http_util");
+const mathUtil = require("../utils/math_util");
 
 // Queries
-const updateBoatLocation = "UPDATE boat SET ";
-const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (";
-const getDistanceBaseCurrent = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE `name` = \""
-const getAllLocationsFromRoute = "SELECT latitude, longitude FROM geolocation WHERE route_boat_name = \""
+const updateBoatCurrentLocation = "UPDATE boat SET cur_latitude = ? AND cur_longitude = ? WHERE `name` = ?;";
+const updateBoatBaseLocation = "UPDATE boat SET base_latitude = ? AND base_longitude = ? WHERE `name` = ?;";
+const addNewLocationToRoute = "INSERT INTO geolocation (time, route_begin_time, route_boat_name, latitude, longitude) VALUES (?,?,?,?,?);";
+const getBaseCurrentLocations = "SELECT base_latitude, base_longitude, cur_latitude, cur_longitude FROM boat WHERE name = ?;"
+const getAllLocationsFromRoute = "SELECT latitude, longitude FROM geolocation WHERE route_boat_name = ? AND route_begin_time = ?;"
 
 // Distance from base location before the left/returned flag will be set (meters)
 const thresholdDistance = 50;
@@ -20,18 +21,15 @@ const thresholdDistance = 50;
 function calibrateBaseLocation(boatInfo, response) {
     var newLocation = fileManager.loadLocationCache(boatInfo.boat_name);
 
-    // Complete the query
-    var completeQuery = updateBoatLocation + 
-    "base_latitude = '" + newLocation.latitude + 
-    "', base_longitude = '" + newLocation.longitude +
-    "' WHERE name = '" + boatInfo.boat_name + "';"; 
+    // Get the necessary variables 
+    var queryVariables = [newLocation.latitude, newLocation.longitude, boatInfo.boat_name];
 
     // Query to the database
-    dbCore.doQuery(completeQuery, (result) => {
+    dbCore.doQuery(updateBoatBaseLocation, queryVariables, (result) => {
         // End the http request
         httpUtil.endResponse(response, 
             result ? httpUtil.CREATED : httpUtil.INTERNAL_ERROR, 
-            result ? "succeeded" : "error"); // Respond
+            result ? "succeeded" : "error");
     });
 }
 
@@ -40,27 +38,22 @@ function updateCurrentLocation (gpsObject) {
     // Store the position in the cache
     fileManager.saveLocationCache(gpsObject);
 
-    // Store the position in the database
-    var completeQuery = updateBoatLocation + 
-    "cur_latitude = '" + gpsObject.latitude + 
-    "', cur_longitude = '" + gpsObject.longitude +
-    "' WHERE name = '" + gpsObject.boat_name + "';"; 
+    // Get the necessary variables 
+    var queryVariables = [gpsObject.latitude, gpsObject.longitude, gpsObject.boat_name];
 
-    dbCore.doQuery(completeQuery);
+    dbCore.doQuery(updateBoatCurrentLocation, queryVariables);
 } 
 
 // Add a new location object to a route (from gps)
 function addLocationObject(boatName, beginTime, latitude, longitude) {
-    var completeQuery = addNewLocationToRoute +
-    " '" + timestamp.createTimestampSQL() + "'" +
-    ", '" + timestamp.createTimestampSQLGivenTime(beginTime) + "'" +
-    ", '" + boatName + "'" +
-    ", " + latitude + 
-    ", " + longitude +
-    ");"; 
+    var queryVariables = [timestamp.createTimestampSQL(), 
+        timestamp.createTimestampSQLGivenTime(beginTime),
+        boatName,
+        latitude,
+        longitude];
 
     // Query to the database
-    dbCore.doQuery(completeQuery);
+    dbCore.doQuery(addNewLocationToRoute, queryVariables);
 }
 
 // Recieve an gps location from a boat and store it appropriately
@@ -120,9 +113,7 @@ function recieveGpsLocation(gpsObject, response) {
 
 // Get info from the maps API about the distance from the calibrated base (true is away, false is at base)
 function checkDistanceWithBaseLocation(boatName, callback) {
-    var completeQuery = getDistanceBaseCurrent + boatName + "\";";
-
-    dbCore.doQuery(completeQuery, (result, error) => {
+    dbCore.doQuery(getBaseCurrentLocations, [boatName], (result, error) => {
         var isBeyondDistance = mathUtil.calculateStraightLineDistance(result[0]) > thresholdDistance;
         callback(isBeyondDistance, error);
     });
@@ -130,10 +121,9 @@ function checkDistanceWithBaseLocation(boatName, callback) {
 
 // Get a specific route from the database
 function getCompleteRoute(response, boatName, begin_time) {
-    var completeQuery = getAllLocationsFromRoute + boatName + "\"" + 
-    " AND route_begin_time = \"" + timestamp.createTimestampSQLTimeCurrentDay(begin_time) + "\";";
+    var queryVariables = [boatName, timestamp.createTimestampSQLTimeCurrentDay(begin_time)];
 
-    dbCore.doQuery(completeQuery, (result, error) => {
+    dbCore.doQuery(getAllLocationsFromRoute, queryVariables, (result, error) => {
         httpUtil.endResponse(response, error ? httpUtil.INTERNAL_ERROR : httpUtil.OK, JSON.stringify(result));
     });
 }
